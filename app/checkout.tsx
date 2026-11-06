@@ -14,13 +14,13 @@ import { PrimaryButton } from '../src/components/PrimaryButton';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useCart } from '../src/context/CartContext';
 import { useOrders } from '../src/context/OrdersContext';
+import { usePopLocations } from '../src/context/PopLocationsContext';
 import { LOCAL_DELIVERY_TOWNS } from '../src/data/seed';
 import type { FulfilmentMethod } from '../src/data/types';
 import { formatPrice } from '../src/data/types';
 import { useCheckoutPayment } from '../src/payments/useCheckoutPayment';
 import type { PaymentMethodKind } from '../src/payments/types';
 import { findNearestActivePop } from '../src/pop/nearestPop';
-import { findPop, listActivePops, listPops } from '../src/pop/popStore';
 import type { PopLocation } from '../src/pop/types';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
@@ -39,6 +39,7 @@ const METHOD_LABEL: Record<PaymentMethodKind, string> = {
 export default function CheckoutScreen() {
   const { items, totalCents, clear } = useCart();
   const { placeOrder } = useOrders();
+  const { activePops, findPop, pops: allPops } = usePopLocations();
   const { user, loginAs } = useAuth();
   const router = useRouter();
   const payment = useCheckoutPayment();
@@ -50,7 +51,7 @@ export default function CheckoutScreen() {
   const [fulfilment, setFulfilment] =
     useState<FulfilmentMethod>('pop_collect');
   const [popId, setPopId] = useState<string>(
-    listActivePops()[0]?.id ?? 'ultimate-outdoor-piet-retief'
+    'ultimate-outdoor-piet-retief'
   );
   const [gpsNote, setGpsNote] = useState(
     'Location not used — select POP manually (or grant location on device).'
@@ -60,7 +61,13 @@ export default function CheckoutScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const pops = useMemo(() => listActivePops(), [fulfilment]);
+  const pops = activePops;
+
+  useEffect(() => {
+    if (!pops.some((p) => p.id === popId)) {
+      setPopId(pops[0]?.id ?? '');
+    }
+  }, [pops, popId]);
 
   useEffect(() => {
     if (payment.primaryMethod) setPayMethod(payment.primaryMethod);
@@ -93,7 +100,7 @@ export default function CheckoutScreen() {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           },
-          listPops()
+          allPops
         );
         if (nearest) {
           setPopId(nearest.pop.id);
@@ -112,7 +119,7 @@ export default function CheckoutScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [allPops]);
 
   const canSubmit = useMemo(() => {
     if (items.length === 0) return false;

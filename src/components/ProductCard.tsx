@@ -73,7 +73,9 @@ export function ProductCard({ product, index = 0 }: Props) {
               },
             ]}
           >
-            <Text style={styles.swatchLabel}>{product.imageHint}</Text>
+            <Text style={styles.swatchLabel}>
+              {product.photoUri ? 'photo' : product.imageHint}
+            </Text>
           </View>
           <View style={styles.body}>
             <Text style={styles.name}>{product.name}</Text>

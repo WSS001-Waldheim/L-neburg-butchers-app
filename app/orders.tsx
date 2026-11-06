@@ -6,12 +6,13 @@ import { WoodBackground } from '../src/components/WoodBackground';
 import { useOrders } from '../src/context/OrdersContext';
 import { formatPrice } from '../src/data/types';
 import { customerFulfilmentLabel } from '../src/pop/orderPopFields';
-import { findPop } from '../src/pop/popStore';
+import { usePopLocations } from '../src/context/PopLocationsContext';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
 export default function MyOrdersScreen() {
   const { orders } = useOrders();
+  const { findPop } = usePopLocations();
   const { user } = useAuth();
   const mine = orders; // demo: all local orders for current session
 

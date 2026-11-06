@@ -11,14 +11,15 @@ import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { pendingApplicationsStore } from '../partner/apply';
+import { usePopLocations } from '../../src/context/PopLocationsContext';
 import { assertTransitionApplication } from '../../src/pop/applicationStatusMachine';
 import type { PopPartnerApplication } from '../../src/pop/applicationTypes';
-import { addOrActivatePop } from '../../src/pop/popStore';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
 export default function AdminApplicationsScreen() {
   const { user, loginAs } = useAuth();
+  const { addOrActivatePop } = usePopLocations();
   const [, bump] = useState(0);
   const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
 
