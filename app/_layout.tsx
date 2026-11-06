@@ -17,7 +17,9 @@ import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '../src/auth/AuthContext';
 import { CartProvider } from '../src/context/CartContext';
+import { CatalogProvider } from '../src/context/CatalogContext';
 import { OrdersProvider } from '../src/context/OrdersContext';
+import { PopLocationsProvider } from '../src/context/PopLocationsContext';
 import { colors } from '../src/theme/colors';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -41,41 +43,74 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
-        <CartProvider>
-          <OrdersProvider>
-            <StatusBar style="light" />
-            <Stack
-              screenOptions={{
-                headerStyle: { backgroundColor: colors.forestDeep },
-                headerTintColor: colors.gold,
-                headerTitleStyle: {
-                  fontFamily: 'CormorantGaramond_600SemiBold',
-                  fontSize: 20,
-                  color: colors.white,
-                },
-                contentStyle: { backgroundColor: colors.parchment },
-              }}
-            >
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="product/[id]" options={{ title: 'Product' }} />
-              <Stack.Screen name="cart" options={{ title: 'Cart' }} />
-              <Stack.Screen name="checkout" options={{ title: 'Checkout' }} />
-              <Stack.Screen name="order/[id]" options={{ title: 'Order status' }} />
-              <Stack.Screen name="qr/[code]" options={{ title: 'From the pack' }} />
-              <Stack.Screen name="profile" options={{ title: 'Profile' }} />
-              <Stack.Screen name="orders" options={{ title: 'My Orders' }} />
-              <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
-              <Stack.Screen name="settings" options={{ title: 'Settings' }} />
-              <Stack.Screen name="help" options={{ title: 'Help / Support' }} />
-              <Stack.Screen name="partner/index" options={{ title: 'POP dashboard' }} />
-              <Stack.Screen name="partner/apply" options={{ title: 'Become a partner' }} />
-              <Stack.Screen
-                name="admin/applications"
-                options={{ title: 'Partner applications' }}
-              />
-            </Stack>
-          </OrdersProvider>
-        </CartProvider>
+        <CatalogProvider>
+          <PopLocationsProvider>
+            <CartProvider>
+              <OrdersProvider>
+                <StatusBar style="light" />
+                <Stack
+                  screenOptions={{
+                    headerStyle: { backgroundColor: colors.forestDeep },
+                    headerTintColor: colors.gold,
+                    headerTitleStyle: {
+                      fontFamily: 'CormorantGaramond_600SemiBold',
+                      fontSize: 20,
+                      color: colors.white,
+                    },
+                    contentStyle: { backgroundColor: colors.parchment },
+                  }}
+                >
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+                  <Stack.Screen name="product/[id]" options={{ title: 'Product' }} />
+                  <Stack.Screen name="cart" options={{ title: 'Cart' }} />
+                  <Stack.Screen name="checkout" options={{ title: 'Checkout' }} />
+                  <Stack.Screen name="order/[id]" options={{ title: 'Order status' }} />
+                  <Stack.Screen name="qr/[code]" options={{ title: 'From the pack' }} />
+                  <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+                  <Stack.Screen name="orders" options={{ title: 'My Orders' }} />
+                  <Stack.Screen
+                    name="notifications"
+                    options={{ title: 'Notifications' }}
+                  />
+                  <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+                  <Stack.Screen name="help" options={{ title: 'Help / Support' }} />
+                  <Stack.Screen
+                    name="partner/index"
+                    options={{ title: 'POP dashboard' }}
+                  />
+                  <Stack.Screen
+                    name="partner/apply"
+                    options={{ title: 'Become a partner' }}
+                  />
+                  <Stack.Screen
+                    name="admin/index"
+                    options={{ title: 'Admin' }}
+                  />
+                  <Stack.Screen
+                    name="admin/products"
+                    options={{ title: 'Products' }}
+                  />
+                  <Stack.Screen
+                    name="admin/product/[id]"
+                    options={{ title: 'Edit product' }}
+                  />
+                  <Stack.Screen
+                    name="admin/orders"
+                    options={{ title: 'All orders' }}
+                  />
+                  <Stack.Screen
+                    name="admin/pops"
+                    options={{ title: 'POP locations' }}
+                  />
+                  <Stack.Screen
+                    name="admin/applications"
+                    options={{ title: 'Partner applications' }}
+                  />
+                </Stack>
+              </OrdersProvider>
+            </CartProvider>
+          </PopLocationsProvider>
+        </CatalogProvider>
       </AuthProvider>
     </GestureHandlerRootView>
   );

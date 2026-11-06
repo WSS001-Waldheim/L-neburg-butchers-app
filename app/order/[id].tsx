@@ -8,7 +8,7 @@ import { useOrders } from '../../src/context/OrdersContext';
 import { formatPrice } from '../../src/data/types';
 import { buildOrderTimeline } from '../../src/notifications/useOrderTimeline';
 import { customerFulfilmentLabel } from '../../src/pop/orderPopFields';
-import { findPop } from '../../src/pop/popStore';
+import { usePopLocations } from '../../src/context/PopLocationsContext';
 import type { PopFulfilmentStatus } from '../../src/pop/types';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
@@ -24,6 +24,7 @@ const ADMIN_STEPS: PopFulfilmentStatus[] = [
 export default function OrderStatusScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getOrder, advanceFulfilment } = useOrders();
+  const { findPop } = usePopLocations();
   const { user } = useAuth();
   const order = getOrder(String(id));
   const pop = order?.popId ? findPop(order.popId) : undefined;

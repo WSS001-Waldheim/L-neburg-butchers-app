@@ -17,7 +17,7 @@ import {
   type StubInboxItem,
 } from '../notifications/StubNotificationDispatcher';
 import { mapStatusToNotifications } from '../notifications/mapStatusToNotifications';
-import { getProduct } from '../data/seed';
+import { DEMO_ORDERS, getProduct as seedGetProduct } from '../data/seed';
 import type {
   CartItem,
   FulfilmentMethod,
@@ -25,6 +25,7 @@ import type {
   OrderLine,
   OrderStatusEvent,
 } from '../data/types';
+import { useCatalog } from './CatalogContext';
 
 type PlaceOrderInput = {
   customerName: string,
@@ -127,8 +128,20 @@ async function fanOutNotifications(
 }
 
 export function OrdersProvider({ children }: { children: React.ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const { getProduct: catalogGet } = useCatalog();
+  const [orders, setOrders] = useState<Order[]>(() =>
+    DEMO_ORDERS.map((o) => ({
+      ...o,
+      statusEvents: o.statusEvents.map((e) => ({ ...e })),
+      lines: o.lines.map((l) => ({ ...l })),
+    }))
+  );
   const [inboxVersion, setInboxVersion] = useState(0);
+
+  const resolveProduct = useCallback(
+    (id: string) => catalogGet(id) ?? seedGetProduct(id),
+    [catalogGet]
+  );
 
   const getOrder = useCallback(
     (id: string) => orders.find((o) => o.id === id || o.orderRef === id),
@@ -138,7 +151,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
   const placeOrder = useCallback(
     (input: PlaceOrderInput, cartItems: CartItem[]): Order => {
       const lines: OrderLine[] = cartItems.map((item) => {
-        const p = getProduct(item.productId)!;
+        const p = resolveProduct(item.productId)!;
         return {
           productId: p.id,
           productName: p.name,
@@ -211,7 +224,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
       setInboxVersion((v) => v + 1);
       return order;
     },
-    []
+    [resolveProduct]
   );
 
   const advanceFulfilment = useCallback(

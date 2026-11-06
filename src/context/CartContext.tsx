@@ -6,9 +6,9 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { getProduct } from '../data/seed';
 import type { CartItem } from '../data/types';
 import { getStockStatus } from '../data/types';
+import { useCatalog } from './CatalogContext';
 
 type CartContextValue = {
   items: CartItem[],
@@ -37,6 +37,7 @@ function loadCart(): CartItem[] {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { getProduct } = useCatalog();
   const [items, setItems] = useState<CartItem[]>(loadCart);
 
   useEffect(() => {
@@ -49,38 +50,44 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items]);
 
-  const addItem = useCallback((productId: string, qty = 1) => {
-    const product = getProduct(productId);
-    if (!product) return { ok: false, reason: 'Product not found' };
-    if (getStockStatus(product) === 'out_of_stock') {
-      return { ok: false, reason: 'Not available yet' };
-    }
-    setItems((prev) => {
-      const existing = prev.find((i) => i.productId === productId);
-      const nextQty = (existing?.quantity ?? 0) + qty;
-      if (nextQty > product.stockLevel) return prev;
-      if (existing) {
-        return prev.map((i) =>
-          i.productId === productId ? { ...i, quantity: nextQty } : i
-        );
-      }
-      return [...prev, { productId, quantity: qty }];
-    });
-    return { ok: true };
-  }, []);
-
-  const setQuantity = useCallback((productId: string, quantity: number) => {
-    setItems((prev) => {
-      if (quantity <= 0) return prev.filter((i) => i.productId !== productId);
+  const addItem = useCallback(
+    (productId: string, qty = 1) => {
       const product = getProduct(productId);
-      const capped = product
-        ? Math.min(quantity, Math.max(product.stockLevel, 0))
-        : quantity;
-      return prev.map((i) =>
-        i.productId === productId ? { ...i, quantity: capped } : i
-      );
-    });
-  }, []);
+      if (!product) return { ok: false, reason: 'Product not found' };
+      if (getStockStatus(product) === 'out_of_stock') {
+        return { ok: false, reason: 'Not available yet' };
+      }
+      setItems((prev) => {
+        const existing = prev.find((i) => i.productId === productId);
+        const nextQty = (existing?.quantity ?? 0) + qty;
+        if (nextQty > product.stockLevel) return prev;
+        if (existing) {
+          return prev.map((i) =>
+            i.productId === productId ? { ...i, quantity: nextQty } : i
+          );
+        }
+        return [...prev, { productId, quantity: qty }];
+      });
+      return { ok: true };
+    },
+    [getProduct]
+  );
+
+  const setQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      setItems((prev) => {
+        if (quantity <= 0) return prev.filter((i) => i.productId !== productId);
+        const product = getProduct(productId);
+        const capped = product
+          ? Math.min(quantity, Math.max(product.stockLevel, 0))
+          : quantity;
+        return prev.map((i) =>
+          i.productId === productId ? { ...i, quantity: capped } : i
+        );
+      });
+    },
+    [getProduct]
+  );
 
   const removeItem = useCallback((productId: string) => {
     setItems((prev) => prev.filter((i) => i.productId !== productId));
@@ -94,7 +101,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const p = getProduct(item.productId);
         return sum + (p?.priceCents ?? 0) * item.quantity;
       }, 0),
-    [items]
+    [items, getProduct]
   );
 
   const itemCount = useMemo(

@@ -11,7 +11,8 @@ import {
 import { BrandLogo } from '../../src/components/BrandLogo';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
-import { getBatchByQr, productsForBatch } from '../../src/data/seed';
+import { useCatalog } from '../../src/context/CatalogContext';
+import { getBatchByQr } from '../../src/data/seed';
 import { formatPrice } from '../../src/data/types';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
@@ -22,6 +23,7 @@ import { type } from '../../src/theme/typography';
  */
 export default function QrLandingScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
+  const { productsForBatch } = useCatalog();
   const batch = getBatchByQr(String(code ?? ''));
   const packs = batch ? productsForBatch(batch.id) : [];
   const { width } = useWindowDimensions();

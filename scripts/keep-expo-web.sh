@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Keep Expo web listening on :8081. Restart if the port dies.
 set -u
-cd /agent/luneburg-butchery || exit 1
+cd /agent/repos/L-neburg-butchers-app || exit 1
 PORT=8081
 LOG=/tmp/luneburg-expo-web.log
 

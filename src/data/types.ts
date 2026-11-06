@@ -36,7 +36,10 @@ export interface Product {
   unitLabel: string;
   weightGrams?: number;
   cutNotes?: string;
+  /** Colour/swatch key for demo imagery until real photos ship. */
   imageHint: string;
+  /** Optional photo URL (admin-managed). Null = swatch only. */
+  photoUri?: string | null;
   stockLevel: number;
   lowStockThreshold: number;
   nextArrivalAt: string | null;

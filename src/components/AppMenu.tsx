@@ -65,8 +65,8 @@ export function AppMenuButton({ light }: Props) {
             ) : null}
             {user?.role === 'admin' ? (
               <MenuItem
-                label="Admin · partner applications"
-                onPress={() => go('/admin/applications')}
+                label="Admin dashboard"
+                onPress={() => go('/admin')}
               />
             ) : null}
             {user?.role === 'customer' || !user ? (
