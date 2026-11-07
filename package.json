@@ -33,7 +33,12 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "eas:build:ios": "eas-cli build --platform ios --profile testflight",
+    "eas:submit:ios": "eas-cli submit --platform ios --profile testflight --latest",
+    "eas:testflight": "bash scripts/eas-testflight.sh"
   },
   "private": true
 }

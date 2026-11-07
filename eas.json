@@ -1,0 +1,51 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_PAYMENTS_MODE": "stub",
+        "EXPO_PUBLIC_NOTIFICATIONS_MODE": "stub"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_PAYMENTS_MODE": "stub",
+        "EXPO_PUBLIC_NOTIFICATIONS_MODE": "stub",
+        "EXPO_PUBLIC_APPLE_MERCHANT_ID": "merchant.co.wssfarming.luneburg"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_PAYMENTS_MODE": "stub",
+        "EXPO_PUBLIC_NOTIFICATIONS_MODE": "stub",
+        "EXPO_PUBLIC_APPLE_MERCHANT_ID": "merchant.co.wssfarming.luneburg"
+      }
+    },
+    "testflight": {
+      "extends": "production",
+      "channel": "testflight"
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "REPLACE_WITH_APPLE_ID_EMAIL",
+        "ascAppId": "REPLACE_WITH_ASC_APP_ID",
+        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID"
+      }
+    },
+    "testflight": {
+      "extends": "production"
+    }
+  }
+}
