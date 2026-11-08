@@ -7,7 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "luneburg",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "primaryColor": "#1B3D2F",
     "ios": {
       "supportsTablet": true,

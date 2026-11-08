@@ -24,7 +24,36 @@ Contact for testers / review: **Karl@Wssfarming.co.za**
 3. Node.js + repo clone; run `npm install`.
 4. Register App ID `co.wssfarming.luneburg` in Apple Developer (or let EAS create it on first build when logged in).
 
-## One-shot (recommended)
+## Credentials Karl must provide (cloud / CI — no inventing)
+
+A cloud agent **cannot** upload to TestFlight without real Expo + Apple access. Do **not** commit secret values to git.
+
+| Need | What it is | How to supply |
+| --- | --- | --- |
+| Expo login | Expo account that will own the project | Interactive `npx eas-cli@latest login`, **or** env `EXPO_TOKEN` (expo.dev → Access Token) |
+| Apple Developer membership | Paid org/individual membership active | Confirm on [developer.apple.com/account](https://developer.apple.com/account) |
+| `appleTeamId` | 10-character Team ID | Membership details → put in `eas.json` submit profile (replace `REPLACE_WITH_APPLE_TEAM_ID`) |
+| `appleId` | Apple ID email for that team | Put in `eas.json` submit (`REPLACE_WITH_APPLE_ID_EMAIL`) **or** use ASC API key below |
+| `ascAppId` | Numeric App Store Connect Apple ID | Create the app once in ASC (bundle `co.wssfarming.luneburg`), then App Information → Apple ID → `REPLACE_WITH_ASC_APP_ID` |
+| ASC API key (preferred for CI) | Issuer ID + Key ID + `.p8` private key | App Store Connect → Users and Access → Integrations → App Store Connect API → create key with App Manager; configure via `npx eas-cli@latest credentials` (do not paste `.p8` into chat/repo) |
+
+Optional later (not required for first stub-payments TestFlight): Apple Pay Merchant ID `merchant.co.wssfarming.luneburg`.
+
+### Exact next command (after credentials exist)
+
+```bash
+cd L-neburg-butchers-app
+npm ci
+# If using token instead of interactive login:
+#   export EXPO_TOKEN=...   # never commit
+npx eas-cli@latest whoami          # must succeed
+npx eas-cli@latest init            # once — writes EAS projectId into app config; commit that change
+# Fill eas.json submit placeholders OR finish ASC API key via: npx eas-cli@latest credentials
+chmod +x scripts/eas-testflight.sh
+./scripts/eas-testflight.sh        # = eas build --platform ios --profile testflight --auto-submit
+```
+
+## One-shot (recommended — interactive machine)
 
 ```bash
 npm install
