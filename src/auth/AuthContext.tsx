@@ -32,6 +32,10 @@ export const DEMO_USERS: AuthUser[] = [
   SEED_ADMIN,
 ];
 
+export function isDemoAccount(user: AuthUser | null): boolean {
+  return Boolean(user && DEMO_USERS.some((account) => account.id === user.id));
+}
+
 type AuthContextValue = {
   user: AuthUser | null,
   isLoggedIn: boolean,

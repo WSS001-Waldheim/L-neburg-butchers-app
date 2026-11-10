@@ -10,8 +10,9 @@ import {
 import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
-import { pendingApplicationsStore } from '../partner/apply';
+import { usePartnerApplications } from '../../src/context/PartnerApplicationsContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
+import { isDemoMode } from '../../src/config/demo';
 import { assertTransitionApplication } from '../../src/pop/applicationStatusMachine';
 import type { PopPartnerApplication } from '../../src/pop/applicationTypes';
 import { colors } from '../../src/theme/colors';
@@ -20,33 +21,36 @@ import { type } from '../../src/theme/typography';
 export default function AdminApplicationsScreen() {
   const { user, loginAs } = useAuth();
   const { addOrActivatePop } = usePopLocations();
-  const [, bump] = useState(0);
+  const { applications, updateApplication } = usePartnerApplications();
   const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
 
   if (!user || user.role !== 'admin') {
     return (
       <WoodBackground style={styles.empty}>
         <Text style={styles.emptyText}>Admin only.</Text>
-        <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        {isDemoMode() ? (
+          <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        ) : null}
       </WoodBackground>
     );
   }
 
-  const pending = pendingApplicationsStore.filter(
-    (a) => a.status === 'pending_review'
-  );
+  const pending = applications.filter((a) => a.status === 'pending_review');
 
   const approve = (app: PopPartnerApplication) => {
     assertTransitionApplication(app.status, 'approved', {
       kind: 'admin',
       user,
     });
-    app.status = 'approved';
-    app.reviewedByUserId = user.id;
-    app.reviewedAt = new Date().toISOString();
-    app.updatedAt = app.reviewedAt;
+    const reviewedAt = new Date().toISOString();
     const newId = `pop-${app.id}`;
-    app.linkedPopId = newId;
+    updateApplication(app.id, {
+      status: 'approved',
+      reviewedByUserId: user.id,
+      reviewedAt,
+      updatedAt: reviewedAt,
+      linkedPopId: newId,
+    });
     addOrActivatePop({
       id: newId,
       code: `NEW-${app.city.slice(0, 3).toUpperCase()}`,
@@ -58,15 +62,14 @@ export default function AdminApplicationsScreen() {
       region: app.region,
       hours: {
         weekly: [],
-        note: 'Hours TBD — newly approved partner.',
+        note: 'Collection hours are confirmed with your order.',
       },
       collectionInstructions:
-        'Bring your collection code. Instructions TBD for new partners.',
+        'Bring your collection code. Collect promptly once the order is marked ready.',
       isActive: true,
-      sortOrder: 50 + pendingApplicationsStore.length,
+      sortOrder: 50 + applications.length,
       contactPhone: app.contactPhone,
     });
-    bump((n) => n + 1);
   };
 
   const reject = (app: PopPartnerApplication) => {
@@ -76,12 +79,14 @@ export default function AdminApplicationsScreen() {
       kind: 'admin',
       user,
     });
-    app.status = 'rejected';
-    app.reviewNote = note;
-    app.reviewedByUserId = user.id;
-    app.reviewedAt = new Date().toISOString();
-    app.updatedAt = app.reviewedAt;
-    bump((n) => n + 1);
+    const reviewedAt = new Date().toISOString();
+    updateApplication(app.id, {
+      status: 'rejected',
+      reviewNote: note,
+      reviewedByUserId: user.id,
+      reviewedAt,
+      updatedAt: reviewedAt,
+    });
   };
 
   return (

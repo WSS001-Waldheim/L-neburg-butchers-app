@@ -20,18 +20,21 @@ import type { FulfilmentMethod } from '../src/data/types';
 import { formatPrice } from '../src/data/types';
 import { useCheckoutPayment } from '../src/payments/useCheckoutPayment';
 import type { PaymentMethodKind } from '../src/payments/types';
+import {
+  customerHoursLine,
+  customerVisibleLine,
+} from '../src/pop/customerCopy';
 import { findNearestActivePop } from '../src/pop/nearestPop';
 import type { PopLocation } from '../src/pop/types';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
 /**
- * Checkout: contact → POP/fulfilment → pack-check → pay (stub / Apple Pay / Yoco wired).
- * Live keys not required — EXPO_PUBLIC_PAYMENTS_MODE=stub.
+ * Checkout: contact → pickup → pack-check → pay.
  */
 
 const METHOD_LABEL: Record<PaymentMethodKind, string> = {
-  stub: 'Demo pay (no charge)',
+  stub: 'Place order',
   apple_pay: 'Apple Pay',
   yoco: 'Yoco (card)',
 };
@@ -54,7 +57,7 @@ export default function CheckoutScreen() {
     'ultimate-outdoor-piet-retief'
   );
   const [gpsNote, setGpsNote] = useState(
-    'Location not used — select POP manually (or grant location on device).'
+    'Select a pickup point, or allow location to suggest the nearest one.'
   );
   const [packCheck, setPackCheck] = useState(false);
   const [payMethod, setPayMethod] = useState<PaymentMethodKind>('stub');
@@ -90,7 +93,7 @@ export default function CheckoutScreen() {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (cancelled) return;
         if (status !== 'granted') {
-          setGpsNote('Location denied — pick a POP manually.');
+          setGpsNote('Location denied — choose a pickup point.');
           return;
         }
         const pos = await Location.getCurrentPositionAsync();
@@ -105,14 +108,14 @@ export default function CheckoutScreen() {
         if (nearest) {
           setPopId(nearest.pop.id);
           setGpsNote(
-            `Nearest active POP suggested: ${nearest.pop.name} (${nearest.pop.areaLabel}). You can override.`
+            `Nearest pickup: ${nearest.pop.name} (${nearest.pop.areaLabel}). You can choose another.`
           );
         }
       } catch {
         setGpsNote(
           Platform.OS === 'web'
-            ? 'Web demo: Ultimate Outdoor pre-selected (Phase 1). Override if more POPs go active.'
-            : 'Could not read location — pick a POP manually.'
+            ? 'Ultimate Outdoor is selected. Choose another pickup point if you prefer.'
+            : 'Could not read location — choose a pickup point.'
         );
       }
     })();
@@ -235,7 +238,7 @@ export default function CheckoutScreen() {
         >
           <Text style={styles.optionTitle}>Collect at Point of Pickup</Text>
           <Text style={styles.optionDetail}>
-            Phase 1 primary — choose an active POP below.
+            Choose an active pickup point below.
           </Text>
         </Pressable>
         <Pressable
@@ -258,7 +261,9 @@ export default function CheckoutScreen() {
           ]}
         >
           <Text style={styles.optionTitle}>WhatsApp + Piet Retief pickup</Text>
-          <Text style={styles.optionDetail}>December trial stub.</Text>
+          <Text style={styles.optionDetail}>
+            Order by WhatsApp and collect in Piet Retief.
+          </Text>
         </Pressable>
 
         {fulfilment === 'pop_collect' ? (
@@ -275,15 +280,22 @@ export default function CheckoutScreen() {
                   {p.name} · {p.areaLabel}
                 </Text>
                 <Text style={styles.optionDetail}>
-                  {p.addressLine1}
-                  {p.addressLine2 ? `, ${p.addressLine2}` : ''} · {p.city}
+                  {[
+                    customerVisibleLine(p.addressLine1),
+                    customerVisibleLine(p.addressLine2),
+                    p.city,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </Text>
                 <Text style={styles.optionDetail}>
-                  {p.hours.note ?? 'Hours TBD'}
+                  {customerHoursLine(p.hours.note)}
                 </Text>
-                <Text style={styles.optionDetail}>
-                  {p.collectionInstructions}
-                </Text>
+                {customerVisibleLine(p.collectionInstructions) ? (
+                  <Text style={styles.optionDetail}>
+                    {customerVisibleLine(p.collectionInstructions)}
+                  </Text>
+                ) : null}
               </Pressable>
             ))}
             {selectedPop ? (
@@ -314,9 +326,8 @@ export default function CheckoutScreen() {
         <Text style={[styles.heading, { marginTop: 24 }]}>Pay</Text>
         <Text style={styles.hint}>
           Estimated total (approx pack weights). Final may adjust after weigh-in.
-          Mode: stub — Apple Pay / Yoco adapters wired, no live keys.
         </Text>
-        {payment.methods.map((m) => (
+        {payment.methods.filter((m) => m !== 'stub').map((m) => (
           <Pressable
             key={m}
             onPress={() => {
@@ -341,7 +352,7 @@ export default function CheckoutScreen() {
         <PrimaryButton
           label={
             payMethod === 'stub'
-              ? 'Place order (demo — no charge)'
+              ? 'Place order'
               : `Pay with ${METHOD_LABEL[payMethod]}`
           }
           onPress={onPlace}

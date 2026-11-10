@@ -18,7 +18,7 @@ export type PopDayHours = {
 
 export type PopHours = {
   weekly: PopDayHours[];
-  /** e.g. "Hours TBD — confirm via WhatsApp for December trial" */
+  /** Shown to customers. Keep unfinished internal notes out of this string. */
   note?: string;
 };
 

@@ -73,10 +73,7 @@
     ],
     "extra": {
       "supportEmail": "Karl@Wssfarming.co.za",
-      "appleMerchantIdPlaceholder": "merchant.co.wssfarming.luneburg",
-      "appleTeamIdPlaceholder": "REPLACE_WITH_APPLE_TEAM_ID",
-      "testFlightContact": "Karl@Wssfarming.co.za",
-      "testFlightReviewNotesPlaceholder": "PLACEHOLDER — TestFlight / App Review notes. Demo uses stub payments (EXPO_PUBLIC_PAYMENTS_MODE=stub). No live charges. Browse catalogue, add to cart, checkout with stub pay. Contact: Karl@Wssfarming.co.za"
+      "appleMerchantIdPlaceholder": "merchant.co.wssfarming.luneburg"
     }
   }
 }

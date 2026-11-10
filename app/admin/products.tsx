@@ -5,6 +5,7 @@ import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { StockMessage } from '../../src/components/StockMessage';
 import { WoodBackground } from '../../src/components/WoodBackground';
+import { isDemoMode } from '../../src/config/demo';
 import { useCatalog } from '../../src/context/CatalogContext';
 import { SECTION_META } from '../../src/data/seed';
 import type { ProductSection } from '../../src/data/types';
@@ -36,7 +37,9 @@ export default function AdminProductsScreen() {
     return (
       <WoodBackground style={styles.empty}>
         <Text style={styles.emptyText}>Admin only.</Text>
-        <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        {isDemoMode() ? (
+          <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        ) : null}
       </WoodBackground>
     );
   }

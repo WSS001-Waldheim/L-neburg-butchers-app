@@ -199,7 +199,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
         whatsappStub: input.fulfilment === 'whatsapp_pickup',
         pickupLocation:
           input.fulfilment === 'whatsapp_pickup'
-            ? 'Piet Retief pickup (December trial)'
+            ? 'Piet Retief pickup'
             : undefined,
         ...paymentFields,
       };
@@ -215,7 +215,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
           toStatus: 'confirmed',
           createdAt: confirmedAt,
           actorRole: 'system',
-          note: 'Payment accepted (stub/demo)',
+          note: 'Payment received',
         });
         void fanOutNotifications(order, 'confirmed');
       }

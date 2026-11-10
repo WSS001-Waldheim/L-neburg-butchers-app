@@ -7,7 +7,8 @@ import { WoodBackground } from '../../src/components/WoodBackground';
 import { useCatalog } from '../../src/context/CatalogContext';
 import { useOrders } from '../../src/context/OrdersContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
-import { pendingApplicationsStore } from '../partner/apply';
+import { isDemoMode } from '../../src/config/demo';
+import { usePartnerApplications } from '../../src/context/PartnerApplicationsContext';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
@@ -40,15 +41,18 @@ export default function AdminHubScreen() {
   const { products } = useCatalog();
   const { orders } = useOrders();
   const { pops, activePops } = usePopLocations();
-  const pending = pendingApplicationsStore.filter(
+  const { applications } = usePartnerApplications();
+  const pending = applications.filter(
     (a) => a.status === 'pending_review'
   ).length;
 
   if (!user || user.role !== 'admin') {
     return (
       <WoodBackground style={styles.empty}>
-        <Text style={styles.emptyText}>Admin dashboard — switch to admin role.</Text>
-        <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        <Text style={styles.emptyText}>Admin only.</Text>
+        {isDemoMode() ? (
+          <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        ) : null}
       </WoodBackground>
     );
   }

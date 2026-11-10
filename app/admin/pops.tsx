@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
+import { isDemoMode } from '../../src/config/demo';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
@@ -15,7 +16,9 @@ export default function AdminPopsScreen() {
     return (
       <WoodBackground style={styles.empty}>
         <Text style={styles.emptyText}>Admin only.</Text>
-        <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        {isDemoMode() ? (
+          <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
+        ) : null}
       </WoodBackground>
     );
   }

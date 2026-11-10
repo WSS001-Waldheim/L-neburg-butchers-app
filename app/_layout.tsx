@@ -19,6 +19,7 @@ import { AuthProvider } from '../src/auth/AuthContext';
 import { CartProvider } from '../src/context/CartContext';
 import { CatalogProvider } from '../src/context/CatalogContext';
 import { OrdersProvider } from '../src/context/OrdersContext';
+import { PartnerApplicationsProvider } from '../src/context/PartnerApplicationsContext';
 import { PopLocationsProvider } from '../src/context/PopLocationsContext';
 import { colors } from '../src/theme/colors';
 
@@ -45,6 +46,7 @@ export default function RootLayout() {
       <AuthProvider>
         <CatalogProvider>
           <PopLocationsProvider>
+            <PartnerApplicationsProvider>
             <CartProvider>
               <OrdersProvider>
                 <StatusBar style="light" />
@@ -74,6 +76,7 @@ export default function RootLayout() {
                   />
                   <Stack.Screen name="settings" options={{ title: 'Settings' }} />
                   <Stack.Screen name="help" options={{ title: 'Help / Support' }} />
+                  <Stack.Screen name="share" options={{ title: 'Share the app' }} />
                   <Stack.Screen
                     name="partner/index"
                     options={{ title: 'POP dashboard' }}
@@ -109,6 +112,7 @@ export default function RootLayout() {
                 </Stack>
               </OrdersProvider>
             </CartProvider>
+            </PartnerApplicationsProvider>
           </PopLocationsProvider>
         </CatalogProvider>
       </AuthProvider>

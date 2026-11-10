@@ -76,7 +76,7 @@ export default function HomeScreen() {
             </Link>
             <Link href="/qr/LC-2026-0142" asChild>
               <Pressable style={styles.ctaGhost}>
-                <Text style={styles.ctaGhostText}>Sample pack QR</Text>
+                <Text style={styles.ctaGhostText}>Pack story</Text>
               </Pressable>
             </Link>
           </View>

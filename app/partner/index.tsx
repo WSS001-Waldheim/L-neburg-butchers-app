@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
+import { isDemoMode } from '../../src/config/demo';
 import { useOrders } from '../../src/context/OrdersContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
 import { colors } from '../../src/theme/colors';
@@ -28,12 +29,14 @@ export default function PartnerDashboardScreen() {
     return (
       <WoodBackground style={styles.empty}>
         <Text style={styles.emptyText}>
-          Switch to the POP partner demo role to see assigned orders.
+          Approved pickup partners see the orders assigned here.
         </Text>
-        <PrimaryButton
-          label="Login as POP partner"
-          onPress={() => loginAs('pop_partner')}
-        />
+        {isDemoMode() ? (
+          <PrimaryButton
+            label="Login as POP partner"
+            onPress={() => loginAs('pop_partner')}
+          />
+        ) : null}
       </WoodBackground>
     );
   }
@@ -51,8 +54,7 @@ export default function PartnerDashboardScreen() {
 
         {queue.length === 0 ? (
           <Text style={styles.emptyText}>
-            No assigned orders in hand-over states. As admin, advance a POP order
-            to dispatched / ready first.
+            No orders waiting for collection.
           </Text>
         ) : (
           queue.map((o) => (
@@ -75,7 +77,7 @@ export default function PartnerDashboardScreen() {
 
               {o.fulfilmentStatus === 'dispatched_to_pop' && user.role === 'pop_partner' ? (
                 <Text style={styles.hint}>
-                  Waiting for admin to mark ready_for_collection (v1).
+                  Waiting until this order is marked ready for collection.
                 </Text>
               ) : null}
 

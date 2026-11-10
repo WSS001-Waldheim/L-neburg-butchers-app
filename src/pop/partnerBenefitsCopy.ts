@@ -1,13 +1,13 @@
 /**
  * In-app “Become a POP partner” copy.
- * Commercial terms (discount / margin cut) are TBD — keep placeholders visible.
+ * Commercial terms stay general until Karl locks the partner offer.
  */
 
 export type PartnerBenefitItem = {
   id: string;
   title: string;
   body: string;
-  /** When true, UI should show a TBD badge / muted style. */
+  /** Kept for older callers. Do not render this as customer-facing copy. */
   tbd?: boolean;
 };
 
@@ -21,8 +21,7 @@ export type PartnerBenefitsCopy = {
 };
 
 /**
- * Placeholder benefits for the app POP partner section.
- * Replace TBD items when Karl locks partner commercial terms.
+ * Benefits of becoming a POP. Commercial detail is confirmed after approval.
  */
 export const PARTNER_BENEFITS_COPY: PartnerBenefitsCopy = {
   sectionTitle: 'Become a collection partner',
@@ -43,14 +42,12 @@ export const PARTNER_BENEFITS_COPY: PartnerBenefitsCopy = {
     {
       id: 'partner-discount',
       title: 'Partner discount',
-      body: 'Partner purchase discount — details TBD.',
-      tbd: true,
+      body: 'Partner purchase terms are confirmed when your application is approved.',
     },
     {
       id: 'margin-cut',
       title: 'Margin / commission',
-      body: 'Margin cut or collection fee structure — details TBD.',
-      tbd: true,
+      body: 'Any collection arrangement is agreed with you after approval.',
     },
   ],
   ctaLabel: 'Apply to become a partner',
