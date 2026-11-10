@@ -5,13 +5,15 @@ import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { StockMessage } from '../../src/components/StockMessage';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useCart } from '../../src/context/CartContext';
-import { getBatch, getProduct } from '../../src/data/seed';
+import { useCatalog } from '../../src/context/CatalogContext';
+import { getBatch } from '../../src/data/seed';
 import { formatPrice, getStockStatus } from '../../src/data/types';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { getProduct } = useCatalog();
   const product = getProduct(String(id));
   const batch = product?.carcassBatchId
     ? getBatch(product.carcassBatchId)

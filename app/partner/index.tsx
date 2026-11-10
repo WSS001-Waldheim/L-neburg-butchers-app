@@ -12,13 +12,14 @@ import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useOrders } from '../../src/context/OrdersContext';
-import { findPop } from '../../src/pop/popStore';
+import { usePopLocations } from '../../src/context/PopLocationsContext';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
 export default function PartnerDashboardScreen() {
   const { user, loginAs } = useAuth();
   const { partnerOrders, markCollected, advanceFulfilment } = useOrders();
+  const { findPop } = usePopLocations();
   const router = useRouter();
   const [codeByOrder, setCodeByOrder] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);

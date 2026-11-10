@@ -1,6 +1,6 @@
 # Lüneburg Country Butchery
 
-Expo (React Native) shopping app for Android, iOS, and web — catalogue, cart, POP collection, stub payments (Apple Pay + Yoco adapters), order timeline, roles (customer / POP partner / admin), and pack QR story landing.
+Expo (React Native) shopping app for Android, iOS, and web — catalogue, cart, POP collection, stub payments (Apple Pay + Yoco adapters), order timeline, roles (customer / POP partner / admin), mobile admin dashboard, and pack QR story landing.
 
 ## Run
 
@@ -38,5 +38,7 @@ Do **not** commit Apple Team secrets, `.p8` keys, or processing certificates. Se
 - Brand: green & gold wood vibe, Est. 1946, “No Compromise on Quality”.
 - Phase 1 POP: Ultimate Outdoor, 18 Smit Street, Piet Retief.
 - Location: when-in-use only (nearest POP). Push strings reserved; live push not wired yet.
+- Demo role switch (dev, or `EXPO_PUBLIC_DEMO`): top-right menu → Customer / POP / Admin.
+- Admin: Menu → Admin dashboard (products, orders, POPs, partner applications).
 
 See Project docs in Cursor for POP / payments / notifications architecture.

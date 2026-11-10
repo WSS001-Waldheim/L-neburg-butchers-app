@@ -11,13 +11,14 @@ import { PrimaryButton } from '../src/components/PrimaryButton';
 import { StockMessage } from '../src/components/StockMessage';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useCart } from '../src/context/CartContext';
-import { getProduct } from '../src/data/seed';
+import { useCatalog } from '../src/context/CatalogContext';
 import { formatPrice } from '../src/data/types';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
 export default function CartScreen() {
   const { items, setQuantity, removeItem, totalCents, clear } = useCart();
+  const { getProduct } = useCatalog();
   const router = useRouter();
 
   if (items.length === 0) {
