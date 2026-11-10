@@ -7,10 +7,27 @@
     "icon": "./assets/icon.png",
     "scheme": "luneburg",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "primaryColor": "#1B3D2F",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "za.co.luneburg.butchery"
+      "bundleIdentifier": "co.wssfarming.luneburg",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Lüneburg uses your location only while the app is open to suggest the nearest Point of Pickup for collection.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Lüneburg uses your location only while the app is open to suggest the nearest Point of Pickup for collection.",
+        "NSUserNotificationsUsageDescription": "Lüneburg sends order updates when your parcel is confirmed, leaves the butchery, or is ready for collection at your Point of Pickup."
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +36,13 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "za.co.luneburg.butchery",
+      "package": "co.wssfarming.luneburg",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -30,7 +53,27 @@
       "expo-router",
       "expo-font",
       "expo-status-bar",
-      "expo-splash-screen"
-    ]
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1B3D2F",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Lüneburg uses your location only while the app is open to suggest the nearest Point of Pickup for collection.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ]
+    ],
+    "extra": {
+      "supportEmail": "Karl@Wssfarming.co.za",
+      "appleMerchantIdPlaceholder": "merchant.co.wssfarming.luneburg"
+    }
   }
 }

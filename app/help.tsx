@@ -1,31 +1,22 @@
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { PrimaryButton } from '../src/components/PrimaryButton';
 import { WoodBackground } from '../src/components/WoodBackground';
+import { FARM_PLACE } from '../src/data/place';
+import { BUG_REPORT_EMAIL } from '../src/support/bugReport';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
 export default function HelpScreen() {
-  const router = useRouter();
   return (
     <WoodBackground>
       <View style={styles.content}>
         <Text style={styles.heading}>Help / Support</Text>
         <Text style={styles.body}>
-          Lüneburg Country Butchery · Ouderdam Farm, Lydenburg / Paulpietersburg
-          region. Cold-chain: collect promptly once marked ready. No returns for
-          ordering errors after the parcel leaves the butchery.
+          Lüneburg Country Butchery · {FARM_PLACE}. Cold chain once packed is
+          20–24 hours. Collect promptly once your order is marked ready. No
+          returns for ordering errors after the parcel leaves the butchery.
         </Text>
-        <Text style={styles.body}>
-          WhatsApp / phone support TBD — use the demo contacts in Profile for
-          now.
-        </Text>
-        <PrimaryButton
-          label="Sample pack QR story"
-          onPress={() => router.push('/qr/LC-2026-0142')}
-          style={{ marginTop: 20 }}
-        />
+        <Text style={styles.body}>Support: {BUG_REPORT_EMAIL}</Text>
       </View>
     </WoodBackground>
   );

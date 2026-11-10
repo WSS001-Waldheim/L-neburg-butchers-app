@@ -20,14 +20,14 @@ export default function SettingsScreen() {
       <View style={styles.content}>
         <Text style={styles.heading}>Notification preferences</Text>
         <Text style={styles.hint}>
-          Stubbed locally — sync to backend later. Collected push is optional.
+          Choose which order updates you want on this phone.
         </Text>
         {(
           [
             ['pushOrderConfirmed', 'Order confirmed'],
             ['pushLeftButchery', 'Parcel left the butchery'],
-            ['pushReadyForCollection', 'Ready at POP (+ code)'],
-            ['pushCollected', 'Collected (optional)'],
+            ['pushReadyForCollection', 'Ready at pickup (with code)'],
+            ['pushCollected', 'Collected'],
           ] as const
         ).map(([key, label]) => (
           <Pressable
@@ -40,10 +40,7 @@ export default function SettingsScreen() {
           </Pressable>
         ))}
         <Text style={[styles.heading, { marginTop: 28 }]}>Payments</Text>
-        <Text style={styles.hint}>
-          EXPO_PUBLIC_PAYMENTS_MODE=stub · Apple Pay + Yoco adapters present,
-          no live keys.
-        </Text>
+        <Text style={styles.hint}>Apple Pay and card payments through Yoco.</Text>
       </View>
     </WoodBackground>
   );

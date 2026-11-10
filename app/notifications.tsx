@@ -13,18 +13,17 @@ export default function NotificationsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Notifications</Text>
         <Text style={styles.hint}>
-          Stub inbox (Expo push not live). Order milestones land here after
-          status changes.
+          Order updates appear here: confirmed, left the butchery, ready for
+          collection, and collected.
         </Text>
         {inbox.length === 0 ? (
-          <Text style={styles.empty}>No stub pushes yet.</Text>
+          <Text style={styles.empty}>No updates yet.</Text>
         ) : (
           [...inbox].reverse().map((item) => (
             <View key={item.id} style={styles.card}>
               <Text style={styles.title}>{item.rendered.title}</Text>
               <Text style={styles.body}>{item.rendered.body}</Text>
               <Text style={styles.meta}>
-                {item.rendered.eventType} ·{' '}
                 {new Date(item.createdAt).toLocaleString('en-ZA')}
               </Text>
             </View>

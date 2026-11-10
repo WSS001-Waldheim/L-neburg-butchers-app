@@ -14,7 +14,8 @@ import { BrandLogo } from '../src/components/BrandLogo';
 import { ProductCard } from '../src/components/ProductCard';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useCart } from '../src/context/CartContext';
-import { PRODUCTS, SECTION_META } from '../src/data/seed';
+import { useCatalog } from '../src/context/CatalogContext';
+import { SECTION_META } from '../src/data/seed';
 import type { ProductSection } from '../src/data/types';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
@@ -28,6 +29,7 @@ const SECTION_ORDER: ProductSection[] = [
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { itemCount } = useCart();
+  const { products } = useCatalog();
   const sloganOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export default function HomeScreen() {
             </Link>
             <Link href="/qr/LC-2026-0142" asChild>
               <Pressable style={styles.ctaGhost}>
-                <Text style={styles.ctaGhostText}>Sample pack QR</Text>
+                <Text style={styles.ctaGhostText}>Pack story</Text>
               </Pressable>
             </Link>
           </View>
@@ -83,7 +85,7 @@ export default function HomeScreen() {
         <View style={styles.catalogue}>
           {SECTION_ORDER.map((section) => {
             const meta = SECTION_META[section];
-            const items = PRODUCTS.filter((p) => p.section === section);
+            const items = products.filter((p) => p.section === section);
             return (
               <View key={section} style={styles.section}>
                 <Text style={styles.sectionTitle}>{meta.title}</Text>

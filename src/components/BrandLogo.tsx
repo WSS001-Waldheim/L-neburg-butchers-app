@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
+import { FARM_PLACE_SHORT } from '../data/place';
 import { colors } from '../theme/colors';
 import { fonts, type } from '../theme/typography';
 
@@ -67,7 +68,7 @@ export function BrandLogo({ size = 'hero' }: Props) {
         </Text>
         <View style={[styles.rule, { backgroundColor: colors.gold }]} />
         <Text style={[styles.place, isHero ? undefined : styles.placeCompact]}>
-          Ouderdam Farm · Lydenburg
+          {FARM_PLACE_SHORT}
         </Text>
       </View>
     </View>

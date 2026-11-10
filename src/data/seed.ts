@@ -1,3 +1,4 @@
+import { FARM_PLACE } from './place';
 import type { CarcassBatch, Order, Product } from './types';
 
 export const BATCHES: CarcassBatch[] = [
@@ -8,7 +9,7 @@ export const BATCHES: CarcassBatch[] = [
     qrCode: 'LC-2026-0142',
     breed: 'Drakensberg',
     bornAt: '2023-04-12',
-    raisedAt: 'Ouderdam Farm, Lydenburg, Mpumalanga',
+    raisedAt: FARM_PLACE,
     finishedAt: '2026-09-28',
     processedAt: '2026-10-02',
     story:
@@ -23,7 +24,7 @@ export const BATCHES: CarcassBatch[] = [
     qrCode: 'LC-2026-0118',
     breed: 'Drakensberg',
     bornAt: '2023-02-03',
-    raisedAt: 'Ouderdam Farm, Lydenburg, Mpumalanga',
+    raisedAt: FARM_PLACE,
     finishedAt: '2026-08-15',
     processedAt: '2026-08-19',
     story:

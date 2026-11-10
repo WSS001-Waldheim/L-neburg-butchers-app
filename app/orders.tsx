@@ -6,20 +6,21 @@ import { WoodBackground } from '../src/components/WoodBackground';
 import { useOrders } from '../src/context/OrdersContext';
 import { formatPrice } from '../src/data/types';
 import { customerFulfilmentLabel } from '../src/pop/orderPopFields';
-import { findPop } from '../src/pop/popStore';
+import { usePopLocations } from '../src/context/PopLocationsContext';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
 export default function MyOrdersScreen() {
   const { orders } = useOrders();
+  const { findPop } = usePopLocations();
   const { user } = useAuth();
-  const mine = orders; // demo: all local orders for current session
+  const mine = orders;
 
   return (
     <WoodBackground>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>
-          {user ? `${user.name}'s orders` : 'Orders'}
+          {user ? 'Your orders' : 'Orders'}
         </Text>
         {mine.length === 0 ? (
           <Text style={styles.empty}>No orders yet — place one from the catalogue.</Text>

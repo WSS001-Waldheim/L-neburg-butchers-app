@@ -18,3 +18,7 @@ coverage/
 .vscode/
 .idea/
 *.tsbuildinfo
+
+# Local helpers that hard-code agent or machine paths
+scripts/keep-cloudflare-tunnel.sh
+scripts/keep-expo-web.sh

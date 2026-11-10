@@ -7,8 +7,9 @@ import { WoodBackground } from '../../src/components/WoodBackground';
 import { useOrders } from '../../src/context/OrdersContext';
 import { formatPrice } from '../../src/data/types';
 import { buildOrderTimeline } from '../../src/notifications/useOrderTimeline';
+import { customerVisibleLine } from '../../src/pop/customerCopy';
 import { customerFulfilmentLabel } from '../../src/pop/orderPopFields';
-import { findPop } from '../../src/pop/popStore';
+import { usePopLocations } from '../../src/context/PopLocationsContext';
 import type { PopFulfilmentStatus } from '../../src/pop/types';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
@@ -24,6 +25,7 @@ const ADMIN_STEPS: PopFulfilmentStatus[] = [
 export default function OrderStatusScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getOrder, advanceFulfilment } = useOrders();
+  const { findPop } = usePopLocations();
   const { user } = useAuth();
   const order = getOrder(String(id));
   const pop = order?.popId ? findPop(order.popId) : undefined;
@@ -56,8 +58,11 @@ export default function OrderStatusScreen() {
         <Text style={styles.statusLabel}>Status</Text>
         <Text style={styles.status}>{label}</Text>
         <Text style={styles.payNote}>
-          Payment: {order.paymentStatus}
-          {order.paymentMethod ? ` · ${order.paymentMethod}` : ''} (stub-safe)
+          {order.paymentStatus === 'paid' || order.paymentStatus === 'authorized'
+            ? 'Payment received'
+            : order.paymentStatus === 'failed'
+              ? 'Payment did not go through'
+              : 'Payment pending'}
         </Text>
 
         {order.fulfilmentStatus === 'ready_for_collection' && pop ? (
@@ -68,7 +73,11 @@ export default function OrderStatusScreen() {
             <Text style={styles.codeMeta}>
               {pop.addressLine1}, {pop.city}
             </Text>
-            <Text style={styles.codeMeta}>{pop.collectionInstructions}</Text>
+            {customerVisibleLine(pop.collectionInstructions) ? (
+              <Text style={styles.codeMeta}>
+                {customerVisibleLine(pop.collectionInstructions)}
+              </Text>
+            ) : null}
           </View>
         ) : null}
 
@@ -143,10 +152,6 @@ export default function OrderStatusScreen() {
             ))}
           </View>
         ) : null}
-
-        <Text style={styles.pushStub}>
-          Push notifications stubbed — see Menu → Notifications for demo inbox.
-        </Text>
 
         <Link href="/" asChild>
           <PrimaryButton
@@ -246,5 +251,4 @@ const styles = StyleSheet.create({
     color: colors.white,
     textTransform: 'capitalize',
   },
-  pushStub: { ...type.caption, color: colors.inkSoft, marginTop: 20 },
 });

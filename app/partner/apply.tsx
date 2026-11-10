@@ -10,12 +10,10 @@ import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { assertTransitionApplication } from '../../src/pop/applicationStatusMachine';
 import type { PopPartnerApplication } from '../../src/pop/applicationTypes';
+import { usePartnerApplications } from '../../src/context/PartnerApplicationsContext';
 import { PARTNER_BENEFITS_COPY } from '../../src/pop/partnerBenefitsCopy';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
-
-/** In-memory pending applications for the pilot (also used by admin screen). */
-export const pendingApplicationsStore: PopPartnerApplication[] = [];
 
 export default function PartnerApplyScreen() {
   const [businessName, setBusinessName] = useState('');
@@ -29,6 +27,7 @@ export default function PartnerApplyScreen() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { submitApplication } = usePartnerApplications();
   const copy = PARTNER_BENEFITS_COPY;
 
   const canSubmit = useMemo(
@@ -73,7 +72,7 @@ export default function PartnerApplyScreen() {
       };
       assertTransitionApplication('draft', 'submitted', {
         kind: 'applicant',
-        userId: 'applicant-demo',
+        userId: 'applicant',
       });
       app.status = 'submitted';
       assertTransitionApplication('submitted', 'pending_review', {
@@ -81,7 +80,7 @@ export default function PartnerApplyScreen() {
       });
       app.status = 'pending_review';
       app.updatedAt = new Date().toISOString();
-      pendingApplicationsStore.push(app);
+      submitApplication(app);
       setDone(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Submit failed');
@@ -96,10 +95,7 @@ export default function PartnerApplyScreen() {
         <Text style={styles.body}>{copy.intro}</Text>
         {copy.benefits.map((b) => (
           <View key={b.id} style={styles.benefit}>
-            <Text style={styles.benefitTitle}>
-              {b.title}
-              {b.tbd ? ' (TBD)' : ''}
-            </Text>
+            <Text style={styles.benefitTitle}>{b.title}</Text>
             <Text style={styles.benefitBody}>{b.body}</Text>
           </View>
         ))}
