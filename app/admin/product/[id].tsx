@@ -40,7 +40,7 @@ export default function AdminProductEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
   const { user, loginAs } = useAuth();
-  const { getProduct, upsertProduct, deleteProduct } = useCatalog();
+  const { getProduct, upsertProduct, deleteProduct, loading } = useCatalog();
   const router = useRouter();
   const existing = !isNew ? getProduct(String(id)) : undefined;
 
@@ -101,6 +101,14 @@ export default function AdminProductEditScreen() {
     );
   }
 
+  if (!isNew && loading && !existing) {
+    return (
+      <WoodBackground style={styles.empty}>
+        <Text style={styles.emptyText}>Loading product…</Text>
+      </WoodBackground>
+    );
+  }
+
   if (!isNew && !existing) {
     return (
       <WoodBackground style={styles.empty}>
@@ -113,7 +121,7 @@ export default function AdminProductEditScreen() {
     );
   }
 
-  const save = () => {
+  const save = async () => {
     try {
       setError(null);
       const stock = Math.max(0, Math.round(Number(stockLevel) || 0));
@@ -129,7 +137,7 @@ export default function AdminProductEditScreen() {
         setError('Name is required.');
         return;
       }
-      const saved = upsertProduct({
+      const saved = await upsertProduct({
         id: isNew ? undefined : existing!.id,
         name,
         section,
@@ -159,8 +167,9 @@ export default function AdminProductEditScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          deleteProduct(existing.id);
-          router.replace('/admin/products');
+          void deleteProduct(existing.id).then(() => {
+            router.replace('/admin/products');
+          });
         },
       },
     ]);

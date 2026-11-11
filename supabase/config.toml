@@ -1,0 +1,11 @@
+# Local config for the Lüneburg web store.
+# Link a hosted project with `supabase link`, then `supabase db push`.
+# Do not put secrets in this file.
+
+project_id = "luneburg-butchery"
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.yoco-webhook]
+verify_jwt = false

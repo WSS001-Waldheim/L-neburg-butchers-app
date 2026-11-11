@@ -8,29 +8,17 @@ import { isDemoMode } from '../../src/config/demo';
 import { useOrders } from '../../src/context/OrdersContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
 import { formatPrice } from '../../src/data/types';
-import { customerFulfilmentLabel } from '../../src/pop/orderPopFields';
-import type { PopFulfilmentStatus } from '../../src/pop/types';
+import {
+  nextStoreStatuses,
+  storeStatusActionLabel,
+  storeStatusLabel,
+} from '../../src/data/storeStatus';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
-/** Mirrors statusMachine legal edges for admin UI. */
-const NEXT_STEPS: Partial<Record<PopFulfilmentStatus, PopFulfilmentStatus[]>> = {
-  placed: ['confirmed', 'cancelled'],
-  confirmed: ['packing', 'cancelled'],
-  packing: ['packed', 'cancelled'],
-  packed: ['dispatched_to_pop', 'cancelled'],
-  dispatched_to_pop: ['ready_for_collection', 'returned_to_butchery'],
-  ready_for_collection: ['collected', 'no_show', 'returned_to_butchery'],
-  collected: ['completed'],
-  no_show: ['returned_to_butchery'],
-  returned_to_butchery: [],
-  completed: [],
-  cancelled: [],
-};
-
 export default function AdminOrdersScreen() {
   const { user, loginAs } = useAuth();
-  const { orders, advanceFulfilment } = useOrders();
+  const { orders, setStoreStatus, loading, error: loadError } = useOrders();
   const { findPop } = usePopLocations();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -60,9 +48,12 @@ export default function AdminOrdersScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>All orders</Text>
         <Text style={styles.hint}>
-          Advance fulfilment — each legal step fans out to the notification stub
-          inbox (confirmed / left butchery / ready + code / collected).
+          Awaiting payment, then paid, confirmed, left the butchery, at the
+          pickup point (collection code), collected, or cancelled. Ready at
+          pickup issues the collection code.
         </Text>
+        {loading ? <Text style={styles.hint}>Loading orders…</Text> : null}
+        {loadError ? <Text style={styles.error}>{loadError}</Text> : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         {sorted.length === 0 ? (
@@ -70,11 +61,7 @@ export default function AdminOrdersScreen() {
         ) : (
           sorted.map((o) => {
             const pop = o.popId ? findPop(o.popId) : undefined;
-            const label = customerFulfilmentLabel(
-              o.fulfilmentStatus,
-              pop?.name ?? 'POP'
-            );
-            const next = NEXT_STEPS[o.fulfilmentStatus] ?? [];
+            const next = nextStoreStatuses(o.storeStatus);
             return (
               <View key={o.id} style={styles.card}>
                 <Pressable onPress={() => router.push(`/order/${o.id}`)}>
@@ -82,10 +69,12 @@ export default function AdminOrdersScreen() {
                   <Text style={styles.meta}>
                     {o.customerName} · {o.phone}
                   </Text>
-                  <Text style={styles.status}>{label}</Text>
+                  <Text style={styles.status}>
+                    {storeStatusLabel(o.storeStatus)}
+                  </Text>
                   <Text style={styles.meta}>
                     {formatPrice(o.totalCents)} · {o.paymentStatus}
-                    {o.collectionCode ? ` · ${o.collectionCode}` : ''}
+                    {o.collectionCode ? ` · code ${o.collectionCode}` : ''}
                   </Text>
                   {pop ? (
                     <Text style={styles.meta}>POP: {pop.name}</Text>
@@ -99,25 +88,27 @@ export default function AdminOrdersScreen() {
                         key={step}
                         style={styles.actionBtn}
                         onPress={() => {
-                          try {
-                            setError(null);
-                            advanceFulfilment(
-                              o.id,
-                              step,
-                              user,
-                              `Admin dashboard → ${step}`
-                            );
-                          } catch (e) {
-                            setError(
-                              e instanceof Error
-                                ? e.message
-                                : 'Illegal transition'
-                            );
-                          }
+                          void (async () => {
+                            try {
+                              setError(null);
+                              await setStoreStatus(
+                                o.id,
+                                step,
+                                user,
+                                `Admin dashboard → ${step}`,
+                              );
+                            } catch (e) {
+                              setError(
+                                e instanceof Error
+                                  ? e.message
+                                  : 'Could not update the order',
+                              );
+                            }
+                          })();
                         }}
                       >
                         <Text style={styles.actionText}>
-                          → {step.replace(/_/g, ' ')}
+                          {storeStatusActionLabel(step)}
                         </Text>
                       </Pressable>
                     ))}

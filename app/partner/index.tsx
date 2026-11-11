@@ -14,6 +14,7 @@ import { WoodBackground } from '../../src/components/WoodBackground';
 import { isDemoMode } from '../../src/config/demo';
 import { useOrders } from '../../src/context/OrdersContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
+import { storeStatusLabel } from '../../src/data/storeStatus';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
@@ -47,9 +48,10 @@ export default function PartnerDashboardScreen() {
   return (
     <WoodBackground>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>{pop?.name ?? 'POP'} dashboard</Text>
+        <Text style={styles.heading}>{pop?.name ?? 'POP'} · assigned orders</Text>
         <Text style={styles.hint}>
-          Hand-over only — no prices. Mark collected with the customer’s code.
+          Orders assigned to this pickup point. When the customer arrives, enter
+          the collection code from their order and mark it collected.
         </Text>
 
         {queue.length === 0 ? (
@@ -65,23 +67,20 @@ export default function PartnerDashboardScreen() {
                 {(o.customerName.split(' ')[1] ?? '').slice(0, 1)}.
               </Text>
               <Text style={styles.meta}>
-                Status: {o.fulfilmentStatus.replace(/_/g, ' ')}
+                Status: {storeStatusLabel(o.storeStatus)}
               </Text>
               <Text style={styles.meta}>
                 Items:{' '}
                 {o.lines.map((l) => `${l.quantity}× ${l.productName}`).join(', ')}
               </Text>
-              {o.collectionCode ? (
-                <Text style={styles.code}>Code on order: {o.collectionCode}</Text>
-              ) : null}
-
-              {o.fulfilmentStatus === 'dispatched_to_pop' && user.role === 'pop_partner' ? (
+              {o.storeStatus === 'left_butchery' ? (
                 <Text style={styles.hint}>
-                  Waiting until this order is marked ready for collection.
+                  On the way. Collection opens when the butchery marks it ready
+                  at this pickup point.
                 </Text>
               ) : null}
 
-              {o.fulfilmentStatus === 'ready_for_collection' ? (
+              {o.storeStatus === 'at_pop' ? (
                 <>
                   <TextInput
                     placeholder="Enter collection code"
@@ -96,28 +95,28 @@ export default function PartnerDashboardScreen() {
                   <PrimaryButton
                     label="Mark collected"
                     onPress={() => {
-                      try {
-                        setError(null);
-                        markCollected(
-                          o.id,
-                          user,
-                          codeByOrder[o.id] ?? o.collectionCode ?? ''
-                        );
-                      } catch (e) {
-                        setError(
-                          e instanceof Error ? e.message : 'Could not collect'
-                        );
-                      }
+                      void (async () => {
+                        try {
+                          setError(null);
+                          await markCollected(
+                            o.id,
+                            user,
+                            codeByOrder[o.id] ?? '',
+                          );
+                        } catch (e) {
+                          setError(
+                            e instanceof Error ? e.message : 'Could not collect',
+                          );
+                        }
+                      })();
                     }}
                     style={{ marginTop: 8 }}
                   />
                   <Pressable
                     onPress={() => {
-                      try {
-                        advanceFulfilment(o.id, 'no_show', user, 'No-show');
-                      } catch {
-                        /* ignore */
-                      }
+                      void advanceFulfilment(o.id, 'no_show', user, 'No-show').catch(
+                        () => undefined,
+                      );
                     }}
                   >
                     <Text style={styles.noshow}>Mark no-show</Text>

@@ -45,6 +45,7 @@ export const SEED_POPS: readonly PopLocation[] = [
     hours: COLLECTION_HOURS,
     collectionInstructions:
       'Bring your collection code and ID. Keep packs cold — collect promptly once marked ready. Site formerly Foggerful Megaworld.',
+    status: 'active',
     isActive: true,
     sortOrder: 1,
   },
@@ -62,6 +63,7 @@ export const SEED_POPS: readonly PopLocation[] = [
     hours: COLLECTION_HOURS,
     collectionInstructions:
       'Bring your collection code and collect promptly once the order is marked ready.',
+    status: 'pending',
     isActive: false,
     sortOrder: 2,
   },
@@ -78,6 +80,7 @@ export const SEED_POPS: readonly PopLocation[] = [
     hours: COLLECTION_HOURS,
     collectionInstructions:
       'Bring your collection code and collect promptly once the order is marked ready.',
+    status: 'pending',
     isActive: false,
     sortOrder: 3,
   },
@@ -103,7 +106,9 @@ export const SEED_POP_STAFF: readonly PopStaffMembership[] = [
 export function activePops(
   pops: readonly PopLocation[] = SEED_POPS,
 ): PopLocation[] {
-  return pops.filter((p) => p.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
+  return pops
+    .filter((p) => p.status === 'active' && p.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export function getPopById(

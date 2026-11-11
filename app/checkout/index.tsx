@@ -9,25 +9,33 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useAuth } from '../src/auth/AuthContext';
-import { PrimaryButton } from '../src/components/PrimaryButton';
-import { WoodBackground } from '../src/components/WoodBackground';
-import { useCart } from '../src/context/CartContext';
-import { useOrders } from '../src/context/OrdersContext';
-import { usePopLocations } from '../src/context/PopLocationsContext';
-import { LOCAL_DELIVERY_TOWNS } from '../src/data/seed';
-import type { FulfilmentMethod } from '../src/data/types';
-import { formatPrice } from '../src/data/types';
-import { useCheckoutPayment } from '../src/payments/useCheckoutPayment';
-import type { PaymentMethodKind } from '../src/payments/types';
+import { isDemoMode } from '../../src/config/demo';
+import { useAuth } from '../../src/auth/AuthContext';
+import { AccountForm } from '../../src/components/AccountForm';
+import { ColdChainNotice, OrderCutoffNotice } from '../../src/components/OrderNotices';
+import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { WoodBackground } from '../../src/components/WoodBackground';
+import { useCart } from '../../src/context/CartContext';
+import { useOrders } from '../../src/context/OrdersContext';
+import { usePopLocations } from '../../src/context/PopLocationsContext';
+import { isSupabaseConfigured } from '../../src/data/supabaseClient';
+import { LOCAL_DELIVERY_TOWNS } from '../../src/data/seed';
+import type { FulfilmentMethod } from '../../src/data/types';
+import { formatPrice } from '../../src/data/types';
+import { useCheckoutPayment } from '../../src/payments/useCheckoutPayment';
+import {
+  isYocoHostedCheckoutEnabled,
+  redirectToYoco,
+} from '../../src/payments/yocoCheckout';
+import type { PaymentMethodKind } from '../../src/payments/types';
 import {
   customerHoursLine,
   customerVisibleLine,
-} from '../src/pop/customerCopy';
-import { findNearestActivePop } from '../src/pop/nearestPop';
-import type { PopLocation } from '../src/pop/types';
-import { colors } from '../src/theme/colors';
-import { type } from '../src/theme/typography';
+} from '../../src/pop/customerCopy';
+import { findNearestActivePop } from '../../src/pop/nearestPop';
+import type { PopLocation } from '../../src/pop/types';
+import { colors } from '../../src/theme/colors';
+import { type } from '../../src/theme/typography';
 
 /**
  * Checkout: contact → pickup → pack-check → pay.
@@ -36,14 +44,14 @@ import { type } from '../src/theme/typography';
 const METHOD_LABEL: Record<PaymentMethodKind, string> = {
   stub: 'Place order',
   apple_pay: 'Apple Pay',
-  yoco: 'Yoco (card)',
+  yoco: 'Yoco',
 };
 
 export default function CheckoutScreen() {
   const { items, totalCents, clear } = useCart();
   const { placeOrder } = useOrders();
   const { activePops, findPop, pops: allPops } = usePopLocations();
-  const { user, loginAs } = useAuth();
+  const { user, loginAs, liveSession } = useAuth();
   const router = useRouter();
   const payment = useCheckoutPayment();
 
@@ -63,6 +71,8 @@ export default function CheckoutScreen() {
   const [payMethod, setPayMethod] = useState<PaymentMethodKind>('stub');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const yocoHosted = isYocoHostedCheckoutEnabled();
 
   const pops = activePops;
 
@@ -144,12 +154,19 @@ export default function CheckoutScreen() {
 
   if (!user) {
     return (
-      <WoodBackground style={styles.empty}>
-        <Text style={styles.emptyText}>Sign in to place an order.</Text>
-        <PrimaryButton
-          label="Continue as customer"
-          onPress={() => loginAs('customer')}
-        />
+      <WoodBackground>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.emptyText}>Sign in to place an order.</Text>
+          {isSupabaseConfigured() ? <AccountForm /> : null}
+          {isDemoMode() ? (
+            <PrimaryButton
+              label="Continue as demo customer"
+              onPress={() => loginAs('customer')}
+              variant="ghost"
+              style={{ marginTop: 12 }}
+            />
+          ) : null}
+        </ScrollView>
       </WoodBackground>
     );
   }
@@ -159,7 +176,34 @@ export default function CheckoutScreen() {
     setSubmitting(true);
     setError(null);
     try {
-      const draftId = `draft-${Date.now().toString(36)}`;
+      const customer = {
+        customerName: name.trim(),
+        phone: phone.trim(),
+        email: email.trim() || undefined,
+        notes: notes.trim() || undefined,
+        fulfilment,
+        popId: fulfilment === 'pop_collect' ? popId : undefined,
+        packCheckAcceptedAt: new Date().toISOString(),
+        actor: user,
+      };
+
+      if (payMethod === 'yoco' && yocoHosted) {
+        if (!liveSession) {
+          setError('Sign in with your shop account before paying with Yoco.');
+          setSubmitting(false);
+          return;
+        }
+        const orderId =
+          pendingOrderId ??
+          (
+            await placeOrder({ ...customer, deferPayment: true }, items)
+          ).id;
+        setPendingOrderId(orderId);
+        await redirectToYoco(orderId);
+        return;
+      }
+
+      const draftId = pendingOrderId ?? `draft-${Date.now().toString(36)}`;
       const result = await payment.pay({
         orderId: draftId,
         amountEstimated: { cents: totalCents, currency: 'ZAR' },
@@ -176,19 +220,9 @@ export default function CheckoutScreen() {
         setSubmitting(false);
         return;
       }
-      const order = placeOrder(
-        {
-          customerName: name.trim(),
-          phone: phone.trim(),
-          email: email.trim() || undefined,
-          notes: notes.trim() || undefined,
-          fulfilment,
-          popId: fulfilment === 'pop_collect' ? popId : undefined,
-          packCheckAcceptedAt: new Date().toISOString(),
-          paymentResult: result,
-          actor: user,
-        },
-        items
+      const order = await placeOrder(
+        { ...customer, paymentResult: result },
+        items,
       );
       clear();
       router.replace(`/order/${order.id}`);
@@ -306,11 +340,9 @@ export default function CheckoutScreen() {
           </View>
         ) : null}
 
-        <Text style={[styles.heading, { marginTop: 24 }]}>Pack-check</Text>
-        <Text style={styles.hint}>
-          Cold-chain window once packed: 20–24 hours. No returns/exchanges for
-          customer ordering errors once the order has left the butchery.
-        </Text>
+        <Text style={[styles.heading, { marginTop: 24 }]}>Before you pay</Text>
+        <OrderCutoffNotice compact />
+        <ColdChainNotice />
         <Pressable
           onPress={() => setPackCheck((v) => !v)}
           style={[styles.option, packCheck && styles.optionSelected]}
@@ -325,7 +357,9 @@ export default function CheckoutScreen() {
 
         <Text style={[styles.heading, { marginTop: 24 }]}>Pay</Text>
         <Text style={styles.hint}>
-          Estimated total (approx pack weights). Final may adjust after weigh-in.
+          {yocoHosted
+            ? 'Yoco secure checkout — card, and Apple Pay in Safari on iPhone. The secret key stays on the server. This page is not the receipt; the order is marked paid when Yoco confirms it.'
+            : 'Demo checkout. Payment is simulated on this device until Yoco test keys and Supabase are set. Estimated total uses the pack weights on the listing.'}
         </Text>
         {payment.methods.filter((m) => m !== 'stub').map((m) => (
           <Pressable
@@ -351,9 +385,11 @@ export default function CheckoutScreen() {
 
         <PrimaryButton
           label={
-            payMethod === 'stub'
-              ? 'Place order'
-              : `Pay with ${METHOD_LABEL[payMethod]}`
+            payMethod === 'yoco'
+              ? 'Pay with Yoco'
+              : payMethod === 'stub'
+                ? 'Place order'
+                : `Pay with ${METHOD_LABEL[payMethod]}`
           }
           onPress={onPlace}
           disabled={!canSubmit || payment.busy}

@@ -22,12 +22,21 @@ export type PopHours = {
   note?: string;
 };
 
+/**
+ * pending — submitted, not approved, hidden from customers.
+ * approved — Karl has approved it, still hidden until activated.
+ * active — approved and live. This is the only status shown at checkout.
+ */
+export type PopApprovalStatus = 'pending' | 'approved' | 'active';
+
 export type PopLocation = {
   id: string;
   code: string;
   name: string;
   areaLabel: string;
   phase: PopPhase;
+  /** Manual approval. Customers only see `active`. */
+  status: PopApprovalStatus;
   addressLine1: string;
   addressLine2?: string;
   city: string;
@@ -37,6 +46,7 @@ export type PopLocation = {
   hours: PopHours;
   collectionInstructions: string;
   contactPhone?: string;
+  /** True only when status === 'active'. Kept so existing filters stay correct. */
   isActive: boolean;
   sortOrder: number;
 };

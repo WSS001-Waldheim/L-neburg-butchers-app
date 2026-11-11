@@ -1,14 +1,16 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { DEMO_USERS, isDemoAccount, useAuth } from '../src/auth/AuthContext';
+import { AccountForm } from '../src/components/AccountForm';
 import { PrimaryButton } from '../src/components/PrimaryButton';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { isDemoMode } from '../src/config/demo';
+import { isSupabaseConfigured } from '../src/data/supabaseClient';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
 export default function ProfileScreen() {
-  const { user, loginAs, logout } = useAuth();
+  const { user, loginAs, logout, liveSession } = useAuth();
   const showDemo = isDemoMode();
   const showAccountDetails = Boolean(user && (showDemo || !isDemoAccount(user)));
 
@@ -41,7 +43,9 @@ export default function ProfileScreen() {
             <PrimaryButton
               label="Logout"
               variant="forest"
-              onPress={logout}
+              onPress={() => {
+                void logout();
+              }}
               style={{ marginTop: 24 }}
             />
           </>
@@ -49,10 +53,16 @@ export default function ProfileScreen() {
           <>
             <Text style={styles.name}>Signed out</Text>
             <Text style={styles.meta}>
-              Continue from checkout when you are ready to order.
+              {isSupabaseConfigured()
+                ? 'Sign in to order, or create a customer account.'
+                : 'Continue from checkout when you are ready to order.'}
             </Text>
+            {isSupabaseConfigured() ? <AccountForm /> : null}
           </>
         )}
+        {liveSession ? (
+          <Text style={styles.meta}>Shop account</Text>
+        ) : null}
         {showDemo ? (
           <>
             <Text style={styles.demo}>Demo accounts</Text>

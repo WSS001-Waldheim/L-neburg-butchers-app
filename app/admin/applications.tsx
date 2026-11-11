@@ -37,21 +37,21 @@ export default function AdminApplicationsScreen() {
 
   const pending = applications.filter((a) => a.status === 'pending_review');
 
-  const approve = (app: PopPartnerApplication) => {
+  const approve = async (app: PopPartnerApplication) => {
     assertTransitionApplication(app.status, 'approved', {
       kind: 'admin',
       user,
     });
     const reviewedAt = new Date().toISOString();
     const newId = `pop-${app.id}`;
-    updateApplication(app.id, {
+    await updateApplication(app.id, {
       status: 'approved',
       reviewedByUserId: user.id,
       reviewedAt,
       updatedAt: reviewedAt,
       linkedPopId: newId,
     });
-    addOrActivatePop({
+    await addOrActivatePop({
       id: newId,
       code: `NEW-${app.city.slice(0, 3).toUpperCase()}`,
       name: app.businessName,
@@ -66,7 +66,8 @@ export default function AdminApplicationsScreen() {
       },
       collectionInstructions:
         'Bring your collection code. Collect promptly once the order is marked ready.',
-      isActive: true,
+      status: 'approved',
+      isActive: false,
       sortOrder: 50 + applications.length,
       contactPhone: app.contactPhone,
     });
@@ -94,8 +95,8 @@ export default function AdminApplicationsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Partner applications</Text>
         <Text style={styles.hint}>
-          Manual approval only (Karl, Ruben, father, factory manager). Approve →
-          PopLocation.isActive.
+          Manual approval only. Approving a partner does not put them on the
+          shop — activate the pickup point after you are ready for collection.
         </Text>
         {pending.length === 0 ? (
           <Text style={styles.emptyText}>
@@ -115,8 +116,10 @@ export default function AdminApplicationsScreen() {
                 <Text style={styles.meta}>Notes: {app.notes}</Text>
               ) : null}
               <PrimaryButton
-                label="Approve → activate POP"
-                onPress={() => approve(app)}
+                label="Approve POP"
+                onPress={() => {
+                  void approve(app);
+                }}
                 style={{ marginTop: 12 }}
               />
               <TextInput

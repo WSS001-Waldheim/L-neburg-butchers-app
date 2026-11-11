@@ -52,7 +52,7 @@ export default function PartnerApplyScreen() {
     ]
   );
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     try {
       setError(null);
       const now = new Date().toISOString();
@@ -80,7 +80,7 @@ export default function PartnerApplyScreen() {
       });
       app.status = 'pending_review';
       app.updatedAt = new Date().toISOString();
-      submitApplication(app);
+      await submitApplication(app);
       setDone(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Submit failed');

@@ -40,7 +40,9 @@ export function findNearestActivePop(
   user: LatLng,
   pops: readonly PopLocation[] = SEED_POPS,
 ): NearestPopResult | null {
-  const candidates = pops.filter((p) => p.isActive && p.geo != null);
+  const candidates = pops.filter(
+    (p) => p.status === 'active' && p.isActive && p.geo != null,
+  );
   if (candidates.length === 0) return null;
 
   let best: NearestPopResult | null = null;

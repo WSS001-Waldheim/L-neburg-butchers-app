@@ -58,11 +58,26 @@ export interface OrderLine {
   unitPriceCents: number;
 }
 
+/**
+ * Web-store lifecycle. `paid` is set by Yoco (or an admin marking an offline
+ * payment). `confirmed` is the butchery accepting that paid order.
+ * `at_pop` always carries a collection code.
+ */
+export type StoreOrderStatus =
+  | 'pending_payment'
+  | 'paid'
+  | 'confirmed'
+  | 'left_butchery'
+  | 'at_pop'
+  | 'collected'
+  | 'cancelled';
+
 export type OrderStatusEvent = {
   id: string;
   orderId: string;
   fromStatus?: PopFulfilmentStatus | null;
   toStatus: PopFulfilmentStatus;
+  storeStatus?: StoreOrderStatus | null;
   createdAt: string;
   actorRole?: string;
   note?: string | null;
@@ -73,6 +88,8 @@ export interface Order extends OrderPaymentFields {
   id: string;
   orderRef: string;
   createdAt: string;
+  /** Signed-in customer. Demo orders use the demo user id. */
+  customerId?: string | null;
   customerName: string;
   phone: string;
   email?: string;
@@ -83,6 +100,8 @@ export interface Order extends OrderPaymentFields {
   fulfilment: FulfilmentMethod;
   /** POP collect — required when fulfilment === pop_collect. */
   popId?: string;
+  /** Coarse web-store status. Source of truth for admin and the Yoco webhook. */
+  storeStatus: StoreOrderStatus;
   fulfilmentStatus: PopFulfilmentStatus;
   collectionCode?: string;
   collectionCodeExpiresAt?: string;
@@ -97,6 +116,9 @@ export interface Order extends OrderPaymentFields {
   statusEvents: OrderStatusEvent[];
   whatsappStub?: boolean;
   pickupLocation?: string;
+  /** Set by the Yoco checkout function. Not shown to customers. */
+  yocoCheckoutId?: string | null;
+  yocoRedirectUrl?: string | null;
 }
 
 export function getStockStatus(product: Product): StockStatus {

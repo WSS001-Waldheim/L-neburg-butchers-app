@@ -21,12 +21,12 @@ const LINKS = [
   {
     href: '/admin/orders',
     title: 'Orders',
-    blurb: 'All orders · advance fulfilment · notify stubs',
+    blurb: 'Paid, confirmed, left the butchery, at pickup, collected',
   },
   {
     href: '/admin/pops',
     title: 'POP locations',
-    blurb: 'Activate / deactivate collection points',
+    blurb: 'Approve, then activate. Only active points are on the shop',
   },
   {
     href: '/admin/applications',

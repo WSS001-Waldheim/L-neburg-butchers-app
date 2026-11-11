@@ -4,8 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../src/auth/AuthContext';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useOrders } from '../src/context/OrdersContext';
+import { storeStatusLabel } from '../src/data/storeStatus';
 import { formatPrice } from '../src/data/types';
-import { customerFulfilmentLabel } from '../src/pop/orderPopFields';
 import { usePopLocations } from '../src/context/PopLocationsContext';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
@@ -32,10 +32,8 @@ export default function MyOrdersScreen() {
                 <Pressable style={styles.card}>
                   <Text style={styles.ref}>{o.orderRef}</Text>
                   <Text style={styles.status}>
-                    {customerFulfilmentLabel(
-                      o.fulfilmentStatus,
-                      pop?.name ?? 'POP'
-                    )}
+                    {storeStatusLabel(o.storeStatus)}
+                    {pop ? ` · ${pop.name}` : ''}
                   </Text>
                   <Text style={styles.meta}>
                     {formatPrice(o.totalCents)} · {o.lines.length} line(s)

@@ -1,5 +1,5 @@
 /**
- * Yoco adapter (SA cards, iOS + Android). Architecture stub — no live API calls.
+ * Yoco hosted checkout (cards, and Apple Pay in Safari on iPhone).
  *
  * When wiring for real builds:
  * - EXPO_PUBLIC_YOCO_PUBLIC_KEY in client; YOCO_SECRET_KEY only on backend
@@ -42,9 +42,17 @@ export function createYocoPaymentProvider(
     async isAvailable(ctx: PaymentAvailabilityContext): Promise<boolean> {
       if (ctx.paymentsMode === 'stub') return false;
       if (!publicKey) return false;
-      // Web can use hosted checkout later; first release focuses on native stores.
-      if (ctx.platform === 'web') return false;
-      return typeof presentYocoCheckout === 'function' || Boolean(apiBaseUrl);
+      const supabaseUrl =
+        typeof process !== 'undefined'
+          ? process.env.EXPO_PUBLIC_SUPABASE_URL
+          : undefined;
+      // Hosted Checkout (cards + Apple Pay on Safari) is the web-store path.
+      // Native can use the same redirect when a return origin is configured.
+      return (
+        typeof presentYocoCheckout === 'function' ||
+        Boolean(apiBaseUrl) ||
+        Boolean(supabaseUrl)
+      );
     },
 
     async createPayment(intent: CreatePaymentIntent): Promise<PaymentSession> {

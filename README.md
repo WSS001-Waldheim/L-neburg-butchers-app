@@ -41,4 +41,6 @@ Do **not** commit Apple Team secrets, `.p8` keys, or processing certificates. Se
 - Demo role switch (dev, or `EXPO_PUBLIC_DEMO`): top-right menu → Customer / POP / Admin.
 - Admin: Menu → Admin dashboard (products, orders, POPs, partner applications).
 
+Web store (Supabase, Yoco checkout, Vercel/Netlify): **[docs/WEB_STORE.md](./docs/WEB_STORE.md)**
+
 See Project docs in Cursor for POP / payments / notifications architecture.

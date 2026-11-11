@@ -5,26 +5,22 @@ import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useOrders } from '../../src/context/OrdersContext';
+import {
+  nextStoreStatuses,
+  storeStatusActionLabel,
+  storeStatusLabel,
+} from '../../src/data/storeStatus';
 import { formatPrice } from '../../src/data/types';
 import { buildOrderTimeline } from '../../src/notifications/useOrderTimeline';
 import { customerVisibleLine } from '../../src/pop/customerCopy';
 import { customerFulfilmentLabel } from '../../src/pop/orderPopFields';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
-import type { PopFulfilmentStatus } from '../../src/pop/types';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
-const ADMIN_STEPS: PopFulfilmentStatus[] = [
-  'packing',
-  'packed',
-  'dispatched_to_pop',
-  'ready_for_collection',
-  'completed',
-];
-
 export default function OrderStatusScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getOrder, advanceFulfilment } = useOrders();
+  const { getOrder, setStoreStatus } = useOrders();
   const { findPop } = usePopLocations();
   const { user } = useAuth();
   const order = getOrder(String(id));
@@ -56,7 +52,8 @@ export default function OrderStatusScreen() {
       <Stack.Screen options={{ title: order.orderRef }} />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.statusLabel}>Status</Text>
-        <Text style={styles.status}>{label}</Text>
+        <Text style={styles.status}>{storeStatusLabel(order.storeStatus)}</Text>
+        <Text style={styles.payNote}>{label}</Text>
         <Text style={styles.payNote}>
           {order.paymentStatus === 'paid' || order.paymentStatus === 'authorized'
             ? 'Payment received'
@@ -65,7 +62,9 @@ export default function OrderStatusScreen() {
               : 'Payment pending'}
         </Text>
 
-        {order.fulfilmentStatus === 'ready_for_collection' && pop ? (
+        {(order.storeStatus === 'at_pop' ||
+          order.fulfilmentStatus === 'ready_for_collection') &&
+        pop ? (
           <View style={styles.codeCard}>
             <Text style={styles.codeLabel}>Ready for collection at</Text>
             <Text style={styles.codePop}>{pop.name}</Text>
@@ -134,20 +133,18 @@ export default function OrderStatusScreen() {
 
         {user?.role === 'admin' ? (
           <View style={styles.adminBox}>
-            <Text style={styles.blockLabel}>Admin · advance fulfilment</Text>
-            {ADMIN_STEPS.map((step) => (
+            <Text style={styles.blockLabel}>Update order</Text>
+            {nextStoreStatuses(order.storeStatus).map((step) => (
               <Pressable
                 key={step}
                 style={styles.adminBtn}
                 onPress={() => {
-                  try {
-                    advanceFulfilment(order.id, step, user, `Admin → ${step}`);
-                  } catch (e) {
-                    // illegal transition — ignore for demo taps
-                  }
+                  void setStoreStatus(order.id, step, user, `Admin → ${step}`);
                 }}
               >
-                <Text style={styles.adminBtnText}>{step.replace(/_/g, ' ')}</Text>
+                <Text style={styles.adminBtnText}>
+                  {storeStatusActionLabel(step)}
+                </Text>
               </Pressable>
             ))}
           </View>

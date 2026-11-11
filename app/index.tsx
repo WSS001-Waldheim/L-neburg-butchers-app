@@ -17,6 +17,8 @@ import { useCart } from '../src/context/CartContext';
 import { useCatalog } from '../src/context/CatalogContext';
 import { SECTION_META } from '../src/data/seed';
 import type { ProductSection } from '../src/data/types';
+import { ORDER_CUTOFF } from '../src/config/orderCutoff';
+import { OrderCutoffNotice } from '../src/components/OrderNotices';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
@@ -29,7 +31,7 @@ const SECTION_ORDER: ProductSection[] = [
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { itemCount } = useCart();
-  const { products } = useCatalog();
+  const { products, loading, error } = useCatalog();
   const sloganOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export default function HomeScreen() {
           <Text style={styles.heroLine}>
             Premium steaks and braai packs from Ouderdam Farm.
           </Text>
+          <Text style={styles.cutoff}>{ORDER_CUTOFF.short}</Text>
           <View style={styles.ctaRow}>
             <Link href="/cart" asChild>
               <Pressable style={styles.cta}>
@@ -83,6 +86,11 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.catalogue}>
+          <OrderCutoffNotice />
+          {loading ? (
+            <Text style={styles.sectionBlurb}>Loading the counter…</Text>
+          ) : null}
+          {error ? <Text style={styles.sectionBlurb}>{error}</Text> : null}
           {SECTION_ORDER.map((section) => {
             const meta = SECTION_META[section];
             const items = products.filter((p) => p.section === section);
@@ -136,6 +144,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     maxWidth: 320,
+  },
+  cutoff: {
+    ...type.caption,
+    color: colors.goldSoft,
+    textAlign: 'center',
+    marginTop: 14,
+    maxWidth: 340,
   },
   ctaRow: {
     flexDirection: 'row',

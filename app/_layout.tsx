@@ -65,7 +65,19 @@ export default function RootLayout() {
                   <Stack.Screen name="index" options={{ headerShown: false }} />
                   <Stack.Screen name="product/[id]" options={{ title: 'Product' }} />
                   <Stack.Screen name="cart" options={{ title: 'Cart' }} />
-                  <Stack.Screen name="checkout" options={{ title: 'Checkout' }} />
+                  <Stack.Screen name="checkout/index" options={{ title: 'Checkout' }} />
+                  <Stack.Screen
+                    name="checkout/success"
+                    options={{ title: 'Payment received' }}
+                  />
+                  <Stack.Screen
+                    name="checkout/cancel"
+                    options={{ title: 'Payment cancelled' }}
+                  />
+                  <Stack.Screen
+                    name="checkout/failure"
+                    options={{ title: 'Payment failed' }}
+                  />
                   <Stack.Screen name="order/[id]" options={{ title: 'Order status' }} />
                   <Stack.Screen name="qr/[code]" options={{ title: 'From the pack' }} />
                   <Stack.Screen name="profile" options={{ title: 'Profile' }} />

@@ -28,8 +28,8 @@ export function createStubPaymentProvider(
   return {
     id: 'stub',
 
-    async isAvailable(_ctx: PaymentAvailabilityContext): Promise<boolean> {
-      return true;
+    async isAvailable(ctx: PaymentAvailabilityContext): Promise<boolean> {
+      return ctx.paymentsMode === 'stub';
     },
 
     async createPayment(intent: CreatePaymentIntent): Promise<PaymentSession> {

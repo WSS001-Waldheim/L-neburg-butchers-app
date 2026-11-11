@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Product } from '../data/types';
 import { formatPrice, getStockStatus } from '../data/types';
 import { colors } from '../theme/colors';
@@ -64,19 +64,25 @@ export function ProductCard({ product, index = 0 }: Props) {
             muted && styles.muted,
           ]}
         >
-          <View
-            style={[
-              styles.swatch,
-              {
-                backgroundColor:
-                  CUT_TONES[product.imageHint] ?? colors.wood,
-              },
-            ]}
-          >
-            <Text style={styles.swatchLabel}>
-              {product.photoUri ? 'photo' : product.imageHint}
-            </Text>
-          </View>
+          {product.photoUri && /^https?:\/\//.test(product.photoUri) ? (
+            <Image
+              source={{ uri: product.photoUri }}
+              style={styles.swatch}
+              accessibilityIgnoresInvertColors
+            />
+          ) : (
+            <View
+              style={[
+                styles.swatch,
+                {
+                  backgroundColor:
+                    CUT_TONES[product.imageHint] ?? colors.wood,
+                },
+              ]}
+            >
+              <Text style={styles.swatchLabel}>{product.imageHint}</Text>
+            </View>
+          )}
           <View style={styles.body}>
             <Text style={styles.name}>{product.name}</Text>
             <Text style={styles.meta} numberOfLines={2}>
