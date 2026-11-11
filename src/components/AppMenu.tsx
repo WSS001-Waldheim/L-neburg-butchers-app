@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(18,40,31,0.55)',
+    backgroundColor: 'rgba(30, 36, 23, 0.55)',
     justifyContent: 'flex-start',
     alignItems: 'flex-end',
     paddingTop: 48,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   demoLabel: {
     ...type.label,
-    color: colors.goldMuted,
+    color: colors.forest,
     marginBottom: 8,
   },
   roleRow: {

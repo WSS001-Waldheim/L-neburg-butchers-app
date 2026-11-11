@@ -153,7 +153,7 @@ export default function PartnerApplyScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 48 },
-  kicker: { ...type.label, color: colors.goldMuted },
+  kicker: { ...type.label, color: colors.forest },
   heading: { ...type.section, color: colors.forestDeep, marginTop: 6 },
   body: { ...type.body, color: colors.ink, marginTop: 10 },
   benefit: { marginTop: 12 },
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   label: {
     ...type.label,
-    color: colors.goldMuted,
+    color: colors.forest,
     marginTop: 12,
     marginBottom: 6,
   },

@@ -38,7 +38,7 @@ export function StockMessage({ product, compact }: Props) {
   if (status === 'low') {
     return (
       <View style={[styles.row, compact && styles.rowCompact]}>
-        <View style={[styles.dot, { backgroundColor: colors.goldMuted }]} />
+        <View style={[styles.dot, { backgroundColor: colors.wood }]} />
         <Text style={[styles.text, compact && styles.textCompact]}>
           Limited packs left · next cut {dateLabel}
         </Text>
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    backgroundColor: 'rgba(27, 61, 47, 0.08)',
+    backgroundColor: 'rgba(30, 36, 23, 0.08)',
     borderLeftWidth: 3,
     borderLeftColor: colors.gold,
   },

@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.goldMuted,
+    borderColor: colors.gold,
     marginBottom: 18,
   },
   bannerHint: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   sectionTag: {
     ...type.caption,
-    color: colors.goldSoft,
+    color: colors.parchment,
     marginTop: 8,
   },
   name: {
@@ -163,13 +163,13 @@ const styles = StyleSheet.create({
   trace: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: 'rgba(27, 61, 47, 0.07)',
+    backgroundColor: 'rgba(30, 36, 23, 0.08)',
     borderLeftWidth: 3,
     borderLeftColor: colors.gold,
   },
   traceLabel: {
     ...type.label,
-    color: colors.goldMuted,
+    color: colors.forest,
     marginBottom: 6,
   },
   traceValue: {
