@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppMenuButton } from '../src/components/AppMenu';
 import { BrandLogo } from '../src/components/BrandLogo';
+import { HeritageBadge } from '../src/components/HeritageBadge';
 import { ProductCard } from '../src/components/ProductCard';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useCart } from '../src/context/CartContext';
@@ -63,6 +64,7 @@ export default function HomeScreen() {
           <Animated.Text style={[styles.slogan, { opacity: sloganOpacity }]}>
             No Compromise on Quality
           </Animated.Text>
+          <HeritageBadge />
           <Text style={styles.heroLine}>
             Premium steaks and braai packs from Ouderdam Farm.
           </Text>

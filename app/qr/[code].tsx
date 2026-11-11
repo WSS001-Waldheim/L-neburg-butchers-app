@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   metaPanel: {
     padding: 16,
-    backgroundColor: 'rgba(27, 61, 47, 0.08)',
+    backgroundColor: 'rgba(30, 36, 23, 0.08)',
     borderLeftWidth: 3,
     borderLeftColor: colors.gold,
   },
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     ...type.label,
-    color: colors.goldMuted,
+    color: colors.forest,
     fontSize: 10,
   },
   metaValue: {

@@ -109,7 +109,7 @@ Privacy: location when-in-use only for nearest POP; notifications stubbed pendin
 
 ## Icon & splash
 
-Basic branded assets ship under `assets/` (forest green + gold “L” / Est. 1946). Replace with final oval logo from Drive when the PDF arrives — keep 1024×1024 `icon.png`.
+Splash uses the KP label badge at `assets/brand/logo.png` on `#1E2417`. Leave `icon.png` and the Android adaptive icon as they are until the printer source files arrive.
 
 ## Related
 

@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    backgroundColor: 'rgba(27, 61, 47, 0.08)',
+    backgroundColor: 'rgba(30, 36, 23, 0.08)',
     borderLeftWidth: 3,
     borderLeftColor: colors.gold,
   },

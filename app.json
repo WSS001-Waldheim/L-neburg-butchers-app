@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "scheme": "luneburg",
     "userInterfaceStyle": "light",
-    "primaryColor": "#1B3D2F",
+    "primaryColor": "#1E2417",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "co.wssfarming.luneburg",
@@ -56,10 +56,13 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#1B3D2F",
-          "image": "./assets/splash-icon.png",
-          "imageWidth": 220,
-          "resizeMode": "contain"
+          "backgroundColor": "#1E2417",
+          "image": "./assets/brand/logo.png",
+          "imageWidth": 280,
+          "resizeMode": "contain",
+          "android": {
+            "imageWidth": 176
+          }
         }
       ],
       [

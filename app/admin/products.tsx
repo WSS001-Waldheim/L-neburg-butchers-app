@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   section: { marginTop: 18 },
   sectionTitle: {
     ...type.label,
-    color: colors.goldMuted,
+    color: colors.forest,
     marginBottom: 8,
   },
   row: {

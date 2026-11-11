@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   meta: { ...type.body, color: colors.inkSoft, marginTop: 6 },
   demo: {
     ...type.label,
-    color: colors.goldMuted,
+    color: colors.forest,
     marginTop: 28,
     marginBottom: 4,
   },

@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   missingText: { ...type.body, color: colors.ink },
-  statusLabel: { ...type.label, color: colors.goldMuted },
+  statusLabel: { ...type.label, color: colors.forest },
   status: { ...type.hero, color: colors.forestDeep, marginTop: 4 },
   payNote: { ...type.caption, color: colors.inkSoft, marginTop: 8 },
   codeCard: {
@@ -197,11 +197,11 @@ const styles = StyleSheet.create({
   block: {
     marginTop: 18,
     padding: 14,
-    backgroundColor: 'rgba(27, 61, 47, 0.07)',
+    backgroundColor: 'rgba(30, 36, 23, 0.08)',
     borderLeftWidth: 3,
     borderLeftColor: colors.gold,
   },
-  blockLabel: { ...type.label, color: colors.goldMuted, marginBottom: 6 },
+  blockLabel: { ...type.label, color: colors.forest, marginBottom: 6 },
   blockValue: { ...type.bodyStrong, color: colors.forestDeep },
   blockMeta: { ...type.caption, color: colors.inkSoft, marginTop: 4 },
   linesHeading: {

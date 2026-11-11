@@ -21,6 +21,7 @@ import { CatalogProvider } from '../src/context/CatalogContext';
 import { OrdersProvider } from '../src/context/OrdersContext';
 import { PartnerApplicationsProvider } from '../src/context/PartnerApplicationsContext';
 import { PopLocationsProvider } from '../src/context/PopLocationsContext';
+import { OpeningSplash } from '../src/components/OpeningSplash';
 import { colors } from '../src/theme/colors';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -39,7 +40,14 @@ export default function RootLayout() {
     if (loaded) SplashScreen.hideAsync().catch(() => undefined);
   }, [loaded]);
 
-  if (!loaded) return null;
+  if (!loaded) {
+    return (
+      <>
+        <StatusBar style="light" />
+        <OpeningSplash />
+      </>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

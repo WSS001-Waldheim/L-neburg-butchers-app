@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   },
   emptyText: { ...type.body, color: colors.inkSoft },
   field: { marginBottom: 12 },
-  label: { ...type.label, color: colors.goldMuted, marginBottom: 6, marginTop: 4 },
+  label: { ...type.label, color: colors.forest, marginBottom: 6, marginTop: 4 },
   input: {
     ...type.body,
     backgroundColor: colors.mist,

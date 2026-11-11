@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   heading: { ...type.section, color: colors.forestDeep, marginBottom: 12 },
   label: {
     ...type.label,
-    color: colors.goldMuted,
+    color: colors.forest,
     marginBottom: 6,
     marginTop: 12,
   },
@@ -396,12 +396,12 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
     borderWidth: 1.5,
-    borderColor: 'rgba(27, 61, 47, 0.25)',
+    borderColor: 'rgba(30, 36, 23, 0.28)',
     backgroundColor: 'rgba(255, 251, 243, 0.55)',
   },
   optionSelected: {
     borderColor: colors.gold,
-    backgroundColor: 'rgba(201, 162, 39, 0.12)',
+    backgroundColor: 'rgba(206, 168, 69, 0.22)',
   },
   optionTitle: { ...type.bodyStrong, color: colors.forestDeep },
   optionDetail: { ...type.caption, color: colors.inkSoft, marginTop: 4 },
