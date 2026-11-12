@@ -4,8 +4,8 @@ import { colors } from '../theme/colors';
 import { BrandLogo } from './BrandLogo';
 
 /**
- * Same treatment as the expo-splash-screen config: label badge centred
- * on the label green. Shown while fonts load, including on web where the
+ * Same treatment as the expo-splash-screen config: the official oval
+ * centred on #1E2417. Shown while fonts load, including on web where the
  * native splash does not paint.
  */
 export function OpeningSplash() {
@@ -22,5 +22,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.forest,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 28,
   },
 });
