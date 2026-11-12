@@ -3,8 +3,8 @@ import { Image, StyleSheet, View } from 'react-native';
 
 const LOGO = require('../../assets/brand/logo.png');
 
-/** Width / height of assets/brand/logo.png (official cream oval, 692×183). */
-const ASPECT = 692 / 183;
+/** Width / height of assets/brand/logo.png (official oval, 2512×1153, about 2.18:1). */
+const ASPECT = 2512 / 1153;
 
 type Props = {
   size?: 'splash' | 'hero' | 'compact';
