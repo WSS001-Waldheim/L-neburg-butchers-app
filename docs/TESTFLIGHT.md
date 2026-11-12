@@ -109,7 +109,7 @@ Privacy: location when-in-use only for nearest POP; notifications stubbed pendin
 
 ## Icon & splash
 
-Splash uses the KP label badge at `assets/brand/logo.png` on `#1E2417`. Leave `icon.png` and the Android adaptive icon as they are until the printer source files arrive.
+Splash, the home hero, and the app icon use the official oval from `assets/brand/logo-official.svg`, rendered as `assets/brand/logo.png`, on `#1E2417`. `icon.png` is that oval centred on the same green at about 86% of the canvas. The Android adaptive icon uses `backgroundColor` `#1E2417` with the oval at about 62% of the canvas so launcher masks do not crop it. The gold 80 Years label stays at `assets/brand/label-80-years.png`.
 
 ## Related
 
