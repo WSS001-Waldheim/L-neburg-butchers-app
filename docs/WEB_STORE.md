@@ -129,6 +129,28 @@ Do not add `YOCO_SECRET_KEY`, `YOCO_WEBHOOK_SECRET`, or the service role key to 
 
 Build command `npx expo export --platform web`. Publish directory `dist`. Same public env vars. `public/_redirects` is copied into the publish directory by the export.
 
+## Admin login
+
+The portal is [https://luneburg-shop.vercel.app/admin](https://luneburg-shop.vercel.app/admin). Only a Supabase user whose `profiles.role` is `admin` sees orders, prices, stock, and the status buttons.
+
+Run `supabase/admin-karl.sql` in the SQL editor. It does not create a password. It marks `karl@wssfarming.co.za` as admin on signup, and upgrades the profile if that email has already signed in.
+
+In the Supabase dashboard, Authentication → URL configuration:
+
+- Site URL: `https://luneburg-shop.vercel.app`
+- Redirect URLs: `https://luneburg-shop.vercel.app/**`
+
+Authentication → Providers → Email stays on. “Allow new users to sign up” stays on until Karl has created his password. If “Confirm email” is on, he must open the confirmation email before the first sign-in.
+
+Karl’s first password, on his phone:
+
+1. Open `https://luneburg-shop.vercel.app/admin`
+2. Tap **Set / forgot password**
+3. Enter `karl@wssfarming.co.za` and a password he chooses, then **Set my password**
+4. If a confirmation email arrives, open it, then **Sign in** with that same password
+
+Later, **Email me a reset link** sends him to `https://luneburg-shop.vercel.app/admin/reset-password`, where he types a new password.
+
 ## Local demo without keys
 
 Without the anon key and the Yoco public key, the catalogue stays on the seed data and the Pay with Yoco button waits for those keys. It does not invent a successful card payment.

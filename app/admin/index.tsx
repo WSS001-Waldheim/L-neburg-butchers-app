@@ -2,12 +2,11 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../../src/auth/AuthContext';
-import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useCatalog } from '../../src/context/CatalogContext';
 import { useOrders } from '../../src/context/OrdersContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
-import { isDemoMode } from '../../src/config/demo';
+import { AdminSignIn, canAccessAdmin } from '../../src/components/AdminSignIn';
 import { usePartnerApplications } from '../../src/context/PartnerApplicationsContext';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
@@ -36,7 +35,7 @@ const LINKS = [
 ] as const;
 
 export default function AdminHubScreen() {
-  const { user, loginAs } = useAuth();
+  const { user, liveSession } = useAuth();
   const router = useRouter();
   const { products } = useCatalog();
   const { orders } = useOrders();
@@ -46,15 +45,8 @@ export default function AdminHubScreen() {
     (a) => a.status === 'pending_review'
   ).length;
 
-  if (!user || user.role !== 'admin') {
-    return (
-      <WoodBackground style={styles.empty}>
-        <Text style={styles.emptyText}>Admin only.</Text>
-        {isDemoMode() ? (
-          <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
-        ) : null}
-      </WoodBackground>
-    );
+  if (!canAccessAdmin(user, liveSession)) {
+    return <AdminSignIn />;
   }
 
   return (

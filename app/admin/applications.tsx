@@ -12,27 +12,20 @@ import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { usePartnerApplications } from '../../src/context/PartnerApplicationsContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
-import { isDemoMode } from '../../src/config/demo';
+import { AdminSignIn, canAccessAdmin } from '../../src/components/AdminSignIn';
 import { assertTransitionApplication } from '../../src/pop/applicationStatusMachine';
 import type { PopPartnerApplication } from '../../src/pop/applicationTypes';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
 export default function AdminApplicationsScreen() {
-  const { user, loginAs } = useAuth();
+  const { user, liveSession } = useAuth();
   const { addOrActivatePop } = usePopLocations();
   const { applications, updateApplication } = usePartnerApplications();
   const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
 
-  if (!user || user.role !== 'admin') {
-    return (
-      <WoodBackground style={styles.empty}>
-        <Text style={styles.emptyText}>Admin only.</Text>
-        {isDemoMode() ? (
-          <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
-        ) : null}
-      </WoodBackground>
-    );
+  if (!canAccessAdmin(user, liveSession) || !user) {
+    return <AdminSignIn />;
   }
 
   const pending = applications.filter((a) => a.status === 'pending_review');

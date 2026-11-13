@@ -12,7 +12,7 @@ import {
 import { useAuth } from '../../../src/auth/AuthContext';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { WoodBackground } from '../../../src/components/WoodBackground';
-import { isDemoMode } from '../../../src/config/demo';
+import { AdminSignIn, canAccessAdmin } from '../../../src/components/AdminSignIn';
 import { useCatalog } from '../../../src/context/CatalogContext';
 import { BATCHES } from '../../../src/data/seed';
 import type { ProductSection } from '../../../src/data/types';
@@ -39,7 +39,7 @@ function randFromCents(cents: number): string {
 export default function AdminProductEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
-  const { user, loginAs } = useAuth();
+  const { user, liveSession } = useAuth();
   const { getProduct, upsertProduct, deleteProduct, loading } = useCatalog();
   const router = useRouter();
   const existing = !isNew ? getProduct(String(id)) : undefined;
@@ -90,15 +90,8 @@ export default function AdminProductEditScreen() {
     });
   }, [stockLevel, lowStockThreshold, nextArrivalAt, section]);
 
-  if (!user || user.role !== 'admin') {
-    return (
-      <WoodBackground style={styles.empty}>
-        <Text style={styles.emptyText}>Admin only.</Text>
-        {isDemoMode() ? (
-          <PrimaryButton label="Login as admin" onPress={() => loginAs('admin')} />
-        ) : null}
-      </WoodBackground>
-    );
+  if (!canAccessAdmin(user, liveSession)) {
+    return <AdminSignIn />;
   }
 
   if (!isNew && loading && !existing) {

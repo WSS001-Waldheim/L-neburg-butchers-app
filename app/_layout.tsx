@@ -119,6 +119,10 @@ export default function RootLayout() {
                     options={{ title: 'Admin' }}
                   />
                   <Stack.Screen
+                    name="admin/reset-password"
+                    options={{ title: 'New password' }}
+                  />
+                  <Stack.Screen
                     name="admin/products"
                     options={{ title: 'Products' }}
                   />

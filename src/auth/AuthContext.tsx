@@ -11,6 +11,7 @@ import { SEED_PARTNER_USER } from '../pop/seedPops';
 import type { AuthUser, UserRole } from '../pop/types';
 import { fetchProfile } from '../data/remoteStore';
 import { getSupabase, isSupabaseConfigured } from '../data/supabaseClient';
+import { adminResetUrl } from './adminUrls';
 
 const SEED_CUSTOMER: AuthUser = {
   id: 'user-customer-demo',
@@ -57,6 +58,9 @@ type AuthContextValue = {
   loginUser: (user: AuthUser) => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (input: SignUpInput) => Promise<'signed-in' | 'confirm-email'>;
+  /** Emails a link that opens /admin/reset-password so he can type a new password. */
+  requestPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   logout: () => Promise<void>;
   clearAuthError: () => void;
 };
@@ -160,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: input.email.trim(),
       password: input.password,
       options: {
+        emailRedirectTo: adminResetUrl().replace(/\/reset-password$/, ''),
         data: {
           full_name: input.name.trim(),
           phone: input.phone.trim(),
@@ -175,6 +180,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(next);
     setLiveSession(Boolean(next));
     return 'signed-in' as const;
+  }, [remote]);
+
+  const requestPasswordReset = useCallback(async (email: string) => {
+    if (!remote) {
+      throw new Error('Supabase is not configured.');
+    }
+    setAuthError(null);
+    const { error } = await getSupabase().auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: adminResetUrl(),
+    });
+    if (error) {
+      setAuthError(error.message);
+      throw new Error(error.message);
+    }
+  }, [remote]);
+
+  const updatePassword = useCallback(async (password: string) => {
+    if (!remote) {
+      throw new Error('Supabase is not configured.');
+    }
+    setAuthError(null);
+    const { error } = await getSupabase().auth.updateUser({ password });
+    if (error) {
+      setAuthError(error.message);
+      throw new Error(error.message);
+    }
   }, [remote]);
 
   const logout = useCallback(async () => {
@@ -196,10 +227,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginUser,
       signIn,
       signUp,
+      requestPasswordReset,
+      updatePassword,
       logout,
       clearAuthError: () => setAuthError(null),
     }),
-    [user, ready, liveSession, authError, loginAs, loginUser, signIn, signUp, logout],
+    [
+      user,
+      ready,
+      liveSession,
+      authError,
+      loginAs,
+      loginUser,
+      signIn,
+      signUp,
+      requestPasswordReset,
+      updatePassword,
+      logout,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
