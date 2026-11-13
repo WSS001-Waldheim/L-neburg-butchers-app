@@ -7,19 +7,37 @@ export type YocoCheckoutResponse = {
 };
 
 /**
- * Hosted Yoco Checkout is on when the public test/live key, Supabase URL,
- * and payments mode sandbox|live are all set. The secret stays in the Edge Function.
+ * Public test or live key. Expo only inlines EXPO_PUBLIC_* into the client.
+ * YOCO_PUBLIC_KEY is the same value when read outside the Metro bundle
+ * (Edge Functions and local scripts).
+ */
+export function yocoPublicKey(
+  env: Record<string, string | undefined> = process.env,
+): string {
+  return (env.EXPO_PUBLIC_YOCO_PUBLIC_KEY || env.YOCO_PUBLIC_KEY || '').trim();
+}
+
+/**
+ * Hosted checkout is the only payment path. It starts in test mode when the
+ * public key is a pk_test_ key. No separate on/off flag.
+ * The secret (YOCO_SECRET_KEY) stays in the Edge Function.
  */
 export function isYocoHostedCheckoutEnabled(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
-  const mode = env.EXPO_PUBLIC_PAYMENTS_MODE;
-  const sandboxOrLive = mode === 'sandbox' || mode === 'live';
   return Boolean(
-    sandboxOrLive &&
-      env.EXPO_PUBLIC_YOCO_PUBLIC_KEY?.trim() &&
-      env.EXPO_PUBLIC_SUPABASE_URL?.trim(),
+    yocoPublicKey(env) && env.EXPO_PUBLIC_SUPABASE_URL?.trim(),
   );
+}
+
+export function yocoIsTestMode(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  const mode = env.EXPO_PUBLIC_PAYMENTS_MODE?.trim();
+  if (mode === 'live') return false;
+  const key = yocoPublicKey(env);
+  if (key.startsWith('pk_live_')) return false;
+  return true;
 }
 
 export function webStoreOrigin(): string {

@@ -1,16 +1,42 @@
 /**
- * Holiday web-store cut-off for the Piet Retief collection run.
- * Shown on the shop, cart, checkout, and help. This is a schedule, not a
- * stock claim — low and out-of-stock cuts still carry their own next-arrival date.
+ * Collection note for the Piet Retief run.
+ * Leave EXPO_PUBLIC_ORDER_CUTOFF empty until Karl confirms the real cut-off.
+ * When it is set (for example "Wednesday 12:00 SAST"), that text is shown.
  */
-export const ORDER_CUTOFF = {
-  label: 'Order cut-off',
-  when: 'Wednesday 12:00 SAST',
-  short:
-    'Order cut-off · Wednesday 12:00 SAST · Friday collection at Ultimate Outdoor, Piet Retief',
+
+export type OrderCutoffCopy = {
+  label: string;
+  when: string;
+  short: string;
+  detail: string;
+  /** True only when Karl has supplied EXPO_PUBLIC_ORDER_CUTOFF. */
+  confirmed: boolean;
+};
+
+const GENERIC: OrderCutoffCopy = {
+  label: 'Collection',
+  when: 'Order ahead',
+  short: 'Order ahead for collection at Ultimate Outdoor, Piet Retief',
   detail:
-    'Orders placed by Wednesday 12:00 (South Africa) are packed for Friday collection at Ultimate Outdoor, 18 Smit Street, Piet Retief. Orders after the cut-off go on the next run along the Joburg – Piet Retief – Sodwana / Kosi Bay route.',
-} as const;
+    'Order ahead for collection at Ultimate Outdoor, 18 Smit Street, Piet Retief. The order cut-off will be shown here once it is confirmed.',
+  confirmed: false,
+};
+
+export function readOrderCutoff(
+  env: Record<string, string | undefined> = process.env,
+): OrderCutoffCopy {
+  const when = env.EXPO_PUBLIC_ORDER_CUTOFF?.trim();
+  if (!when) return GENERIC;
+  return {
+    label: 'Order cut-off',
+    when,
+    short: `Order cut-off · ${when} · Collection at Ultimate Outdoor, Piet Retief`,
+    detail: `Orders placed by ${when} are packed for collection at Ultimate Outdoor, 18 Smit Street, Piet Retief.`,
+    confirmed: true,
+  };
+}
+
+export const ORDER_CUTOFF = readOrderCutoff();
 
 export const COLD_CHAIN_RULE = {
   title: 'Cold chain — no returns',

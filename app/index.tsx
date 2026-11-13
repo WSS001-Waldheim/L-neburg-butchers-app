@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppMenuButton } from '../src/components/AppMenu';
 import { BrandLogo } from '../src/components/BrandLogo';
 import { ProductCard } from '../src/components/ProductCard';
+import { StoreColumn } from '../src/components/StoreColumn';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useCart } from '../src/context/CartContext';
 import { useCatalog } from '../src/context/CatalogContext';
@@ -45,9 +46,20 @@ export default function HomeScreen() {
 
   return (
     <WoodBackground>
+      <StoreColumn
+        sticky={
+          <Link href="/cart" asChild>
+            <Pressable style={styles.stickyBtn}>
+              <Text style={styles.stickyText}>
+                Cart{itemCount > 0 ? ` · ${itemCount}` : ''}
+              </Text>
+            </Pressable>
+          </Link>
+        }
+      >
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: 48 + insets.bottom,
+          paddingBottom: 24,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -70,13 +82,6 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.cutoff}>{ORDER_CUTOFF.short}</Text>
           <View style={styles.ctaRow}>
-            <Link href="/cart" asChild>
-              <Pressable style={styles.cta}>
-                <Text style={styles.ctaText}>
-                  Cart{itemCount > 0 ? ` · ${itemCount}` : ''}
-                </Text>
-              </Pressable>
-            </Link>
             <Link href="/qr/LC-2026-0142" asChild>
               <Pressable style={styles.ctaGhost}>
                 <Text style={styles.ctaGhostText}>Pack story</Text>
@@ -110,6 +115,7 @@ export default function HomeScreen() {
           })}
         </View>
       </ScrollView>
+      </StoreColumn>
     </WoodBackground>
   );
 }
@@ -159,20 +165,25 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
-  cta: {
+  stickyBtn: {
+    minHeight: 52,
     backgroundColor: colors.gold,
-    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
   },
-  ctaText: {
+  stickyText: {
     ...type.bodyStrong,
     color: colors.forestDeep,
   },
   ctaGhost: {
+    minHeight: 48,
     borderWidth: 1.5,
     borderColor: colors.goldSoft,
     paddingVertical: 12,
     paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaGhostText: {
     ...type.bodyStrong,

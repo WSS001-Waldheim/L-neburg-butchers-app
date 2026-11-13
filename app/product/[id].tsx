@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { StockMessage } from '../../src/components/StockMessage';
+import { StoreColumn } from '../../src/components/StoreColumn';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useCart } from '../../src/context/CartContext';
 import { useCatalog } from '../../src/context/CatalogContext';
@@ -48,6 +49,21 @@ export default function ProductDetailScreen() {
   return (
     <WoodBackground>
       <Stack.Screen options={{ title: product.name }} />
+      <StoreColumn
+        sticky={
+          <PrimaryButton
+            label={
+              canAdd
+                ? added
+                  ? 'Added — view cart'
+                  : 'Add to cart'
+                : 'See next arrival above'
+            }
+            onPress={canAdd && added ? () => router.push('/cart') : onAdd}
+            disabled={!canAdd}
+          />
+        }
+      >
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.banner}>
           <Text style={styles.bannerHint}>{product.imageHint}</Text>
@@ -87,27 +103,8 @@ export default function ProductDetailScreen() {
           </View>
         ) : null}
 
-        <View style={styles.actions}>
-          <PrimaryButton
-            label={
-              canAdd
-                ? added
-                  ? 'Added to cart'
-                  : 'Add to cart'
-                : 'See next arrival above'
-            }
-            onPress={onAdd}
-            disabled={!canAdd}
-            variant="gold"
-          />
-          <PrimaryButton
-            label="View cart"
-            onPress={() => router.push('/cart')}
-            variant="forest"
-            style={{ marginTop: 10 }}
-          />
-        </View>
       </ScrollView>
+      </StoreColumn>
     </WoodBackground>
   );
 }

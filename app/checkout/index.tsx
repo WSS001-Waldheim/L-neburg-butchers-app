@@ -14,6 +14,7 @@ import { useAuth } from '../../src/auth/AuthContext';
 import { AccountForm } from '../../src/components/AccountForm';
 import { ColdChainNotice, OrderCutoffNotice } from '../../src/components/OrderNotices';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { StoreColumn } from '../../src/components/StoreColumn';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useCart } from '../../src/context/CartContext';
 import { useOrders } from '../../src/context/OrdersContext';
@@ -22,12 +23,11 @@ import { isSupabaseConfigured } from '../../src/data/supabaseClient';
 import { LOCAL_DELIVERY_TOWNS } from '../../src/data/seed';
 import type { FulfilmentMethod } from '../../src/data/types';
 import { formatPrice } from '../../src/data/types';
-import { useCheckoutPayment } from '../../src/payments/useCheckoutPayment';
 import {
   isYocoHostedCheckoutEnabled,
   redirectToYoco,
+  yocoIsTestMode,
 } from '../../src/payments/yocoCheckout';
-import type { PaymentMethodKind } from '../../src/payments/types';
 import {
   customerHoursLine,
   customerVisibleLine,
@@ -38,14 +38,9 @@ import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
 /**
- * Checkout: contact → pickup → pack-check → pay.
+ * Checkout: contact → pickup → pack-check → Yoco hosted checkout.
+ * Cards and Apple Pay (Safari on iPhone) both happen on Yoco’s page.
  */
-
-const METHOD_LABEL: Record<PaymentMethodKind, string> = {
-  stub: 'Place order',
-  apple_pay: 'Apple Pay',
-  yoco: 'Yoco',
-};
 
 export default function CheckoutScreen() {
   const { items, totalCents, clear } = useCart();
@@ -53,7 +48,6 @@ export default function CheckoutScreen() {
   const { activePops, findPop, pops: allPops } = usePopLocations();
   const { user, loginAs, liveSession } = useAuth();
   const router = useRouter();
-  const payment = useCheckoutPayment();
 
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
@@ -68,11 +62,11 @@ export default function CheckoutScreen() {
     'Select a pickup point, or allow location to suggest the nearest one.'
   );
   const [packCheck, setPackCheck] = useState(false);
-  const [payMethod, setPayMethod] = useState<PaymentMethodKind>('stub');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const yocoHosted = isYocoHostedCheckoutEnabled();
+  const yocoTest = yocoIsTestMode();
 
   const pops = activePops;
 
@@ -81,10 +75,6 @@ export default function CheckoutScreen() {
       setPopId(pops[0]?.id ?? '');
     }
   }, [pops, popId]);
-
-  useEffect(() => {
-    if (payment.primaryMethod) setPayMethod(payment.primaryMethod);
-  }, [payment.primaryMethod]);
 
   useEffect(() => {
     let cancelled = false;
@@ -187,45 +177,25 @@ export default function CheckoutScreen() {
         actor: user,
       };
 
-      if (payMethod === 'yoco' && yocoHosted) {
-        if (!liveSession) {
-          setError('Sign in with your shop account before paying with Yoco.');
-          setSubmitting(false);
-          return;
-        }
-        const orderId =
-          pendingOrderId ??
-          (
-            await placeOrder({ ...customer, deferPayment: true }, items)
-          ).id;
-        setPendingOrderId(orderId);
-        await redirectToYoco(orderId);
-        return;
-      }
-
-      const draftId = pendingOrderId ?? `draft-${Date.now().toString(36)}`;
-      const result = await payment.pay({
-        orderId: draftId,
-        amountEstimated: { cents: totalCents, currency: 'ZAR' },
-        customer: {
-          name: name.trim(),
-          phone: phone.trim(),
-          email: email.trim() || undefined,
-        },
-        method: payMethod,
-        returnUrl: 'luneburg://order/return',
-      });
-      if (!result.ok) {
-        setError(result.message);
+      if (!yocoHosted) {
+        setError(
+          'Yoco test checkout is not configured yet. Set EXPO_PUBLIC_YOCO_PUBLIC_KEY and the Supabase anon key. The secret stays on Supabase.',
+        );
         setSubmitting(false);
         return;
       }
-      const order = await placeOrder(
-        { ...customer, paymentResult: result },
-        items,
-      );
-      clear();
-      router.replace(`/order/${order.id}`);
+      if (isSupabaseConfigured() && !liveSession) {
+        setError('Sign in with your shop account before paying with Yoco.');
+        setSubmitting(false);
+        return;
+      }
+      const orderId =
+        pendingOrderId ??
+        (
+          await placeOrder({ ...customer, deferPayment: true }, items)
+        ).id;
+      setPendingOrderId(orderId);
+      await redirectToYoco(orderId);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Checkout failed');
       setSubmitting(false);
@@ -234,8 +204,18 @@ export default function CheckoutScreen() {
 
   const selectedPop: PopLocation | undefined = findPop(popId);
 
+  const payBar = (
+    <PrimaryButton
+      label="Pay with Yoco"
+      onPress={onPlace}
+      disabled={!canSubmit || !yocoHosted}
+      loading={submitting}
+    />
+  );
+
   return (
     <WoodBackground>
+      <StoreColumn sticky={payBar}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Your details</Text>
         <Text style={styles.label}>Name</Text>
@@ -355,48 +335,21 @@ export default function CheckoutScreen() {
           </Text>
         </Pressable>
 
-        <Text style={[styles.heading, { marginTop: 24 }]}>Pay</Text>
+        <Text style={[styles.heading, { marginTop: 24 }]}>Pay with Yoco</Text>
         <Text style={styles.hint}>
           {yocoHosted
-            ? 'Yoco secure checkout — card, and Apple Pay in Safari on iPhone. The secret key stays on the server. This page is not the receipt; the order is marked paid when Yoco confirms it.'
-            : 'Demo checkout. Payment is simulated on this device until Yoco test keys and Supabase are set. Estimated total uses the pack weights on the listing.'}
+            ? `Card, or Apple Pay in Safari on iPhone. ${yocoTest ? 'Test mode.' : 'Live mode.'} Yoco’s page takes the payment. This screen is not the receipt — the order is marked paid when Yoco confirms it.`
+            : 'Card, or Apple Pay in Safari on iPhone, on Yoco’s secure page. Test mode starts when the public test key and the Supabase anon key are set. YOCO_SECRET_KEY and YOCO_WEBHOOK_SECRET stay on Supabase, not in the app.'}
         </Text>
-        {payment.methods.filter((m) => m !== 'stub').map((m) => (
-          <Pressable
-            key={m}
-            onPress={() => {
-              payment.clearError();
-              setPayMethod(m);
-            }}
-            style={[styles.option, payMethod === m && styles.optionSelected]}
-          >
-            <Text style={styles.optionTitle}>{METHOD_LABEL[m]}</Text>
-          </Pressable>
-        ))}
 
         <View style={styles.summary}>
           <Text style={styles.summaryLabel}>Estimated total</Text>
           <Text style={styles.summaryValue}>{formatPrice(totalCents)}</Text>
         </View>
 
-        {error || payment.error ? (
-          <Text style={styles.error}>{error || payment.error}</Text>
-        ) : null}
-
-        <PrimaryButton
-          label={
-            payMethod === 'yoco'
-              ? 'Pay with Yoco'
-              : payMethod === 'stub'
-                ? 'Place order'
-                : `Pay with ${METHOD_LABEL[payMethod]}`
-          }
-          onPress={onPlace}
-          disabled={!canSubmit || payment.busy}
-          loading={submitting || payment.busy}
-          style={{ marginTop: 16 }}
-        />
+        {error ? <Text style={styles.error}>{error}</Text> : null}
       </ScrollView>
+      </StoreColumn>
     </WoodBackground>
   );
 }
@@ -423,12 +376,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mist,
     borderWidth: 1,
     borderColor: colors.woodWash,
+    minHeight: 48,
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: colors.ink,
   },
   hint: { ...type.caption, color: colors.inkSoft, marginBottom: 10 },
   option: {
+    minHeight: 52,
     padding: 14,
     marginBottom: 10,
     borderWidth: 1.5,

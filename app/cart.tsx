@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { PrimaryButton } from '../src/components/PrimaryButton';
 import { StockMessage } from '../src/components/StockMessage';
+import { StoreColumn } from '../src/components/StoreColumn';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useCart } from '../src/context/CartContext';
 import { useCatalog } from '../src/context/CatalogContext';
@@ -40,6 +41,14 @@ export default function CartScreen() {
 
   return (
     <WoodBackground>
+      <StoreColumn
+        sticky={
+          <PrimaryButton
+            label={`Checkout · ${formatPrice(totalCents)}`}
+            onPress={() => router.push('/checkout')}
+          />
+        }
+      >
       <ScrollView contentContainerStyle={styles.content}>
         {items.map((item) => {
           const product = getProduct(item.productId);
@@ -88,17 +97,13 @@ export default function CartScreen() {
         </View>
 
         <PrimaryButton
-          label="Checkout"
-          onPress={() => router.push('/checkout')}
-          style={{ marginTop: 20 }}
-        />
-        <PrimaryButton
           label="Clear cart"
           variant="ghost"
           onPress={clear}
-          style={{ marginTop: 10 }}
+          style={{ marginTop: 16 }}
         />
       </ScrollView>
+      </StoreColumn>
     </WoodBackground>
   );
 }
@@ -154,8 +159,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   qtyBtn: {
-    width: 32,
-    height: 32,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.forest,

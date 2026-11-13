@@ -6,13 +6,13 @@ The same Expo app is the shop. With no Supabase keys it keeps using the in-memor
 
 ## What is live in this build
 
-- Postgres schema, row level security, and seed catalogue in `supabase/migrations`.
+- Postgres schema, row level security, and seed catalogue in `supabase/setup.sql` (paste into the SQL editor) and `supabase/migrations`.
 - Shop, cart, and checkout read that data when the public env vars are set, and the seed otherwise.
-- Yoco hosted checkout (cards, and Apple Pay in Safari on iPhone) via the `create-checkout` Edge Function. The secret key never ships in the client.
+- Yoco hosted checkout is the only payment method: card, and Apple Pay in Safari on iPhone. The secret never ships in the client. Starts in test mode (`pk_test_` / `sk_test_`).
 - `yoco-webhook` checks the Standard Webhooks signature and marks the order **paid**. Karl confirms it in admin before it leaves the butchery.
 - Admin screens for products (price, pack size, photo, stock, next arrival), order status, and POP approve / activate.
 - POP screen: orders assigned to that point, collected only with the collection code.
-- Order cut-off (Wednesday 12:00 SAST) on the shop, cart, checkout, and help.
+- Until `EXPO_PUBLIC_ORDER_CUTOFF` is set, the shop says “Order ahead for collection at Ultimate Outdoor, Piet Retief”.
 - Cold-chain no-returns rule on checkout, with the pack-check still required.
 - Low and out-of-stock cuts keep showing the next arrival date. The line “Scarcity is part of the brand” is not used.
 
@@ -24,13 +24,15 @@ Nothing here can charge a card or persist an order until the project, keys, and 
 
 | Item | Where it goes | Notes |
 | --- | --- | --- |
-| Supabase project | Dashboard + CLI | New project. Apply `supabase/migrations`. |
-| `EXPO_PUBLIC_SUPABASE_URL` | Host env (Vercel/Netlify) and EAS | Project URL, public. |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Host env and EAS | Public anon key. Not the service role. |
-| Service role key | Supabase injects it into Edge Functions | Never put it in Expo env or git. |
-| Yoco test secret `sk_test_…` | `supabase secrets set YOCO_SECRET_KEY` | Business Portal, test mode. |
-| Yoco test public `pk_test_…` | `EXPO_PUBLIC_YOCO_PUBLIC_KEY` | Safe in the client. |
-| Yoco webhook secret `whsec_…` | `supabase secrets set YOCO_WEBHOOK_SECRET` | Returned once when the webhook is registered. |
+| Supabase project `hnhmfnundobuarvfbaae` | Already created (eu-central-1) | Paste `supabase/setup.sql` in the SQL editor. |
+| `EXPO_PUBLIC_SUPABASE_URL` | Vercel | `https://hnhmfnundobuarvfbaae.supabase.co` |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Vercel | Publishable anon key. Not the service role. |
+| `EXPO_PUBLIC_YOCO_PUBLIC_KEY` | Vercel | The `YOCO_PUBLIC_KEY` value. Start with `pk_test_…`. |
+| `EXPO_PUBLIC_PAYMENTS_MODE` | Vercel | `sandbox` for test. `live` only after the live keys. |
+| `EXPO_PUBLIC_ORDER_CUTOFF` | Vercel, optional | Leave empty until the real cut-off is confirmed. |
+| `YOCO_SECRET_KEY` | Supabase secret, not Vercel | `sk_test_…` to start. |
+| `YOCO_WEBHOOK_SECRET` | Supabase secret, not Vercel | `whsec_…` from the test webhook. |
+| Service role key | Injected into Edge Functions | Never put it in Vercel or git. |
 | Domain | Vercel or Netlify, then Yoco return URLs | HTTPS. Add it to `ALLOWED_RETURN_ORIGINS` if you set that secret. |
 | Admin user | Supabase Auth, then SQL below | Email/password. Turn off “Confirm email” for the pilot, or confirm Karl’s address by hand. |
 | Ultimate Outdoor login | Same, role `pop` | Only after you want the shop to hand over with a real account. |
@@ -39,8 +41,10 @@ Copy `.env.example` to `.env` for local Expo. Do not commit `.env`.
 
 ## Database
 
+The project is `hnhmfnundobuarvfbaae`. Open the SQL editor and paste `supabase/setup.sql` in one go. Or, with the CLI:
+
 ```bash
-npx supabase link --project-ref <ref>
+npx supabase link --project-ref hnhmfnundobuarvfbaae
 npx supabase db push
 npx supabase secrets set YOCO_SECRET_KEY=sk_test_... YOCO_WEBHOOK_SECRET=whsec_...
 npx supabase functions deploy create-checkout
@@ -51,7 +55,7 @@ npx supabase functions deploy yoco-webhook
 
 Register the webhook in the Yoco Business Portal (test mode first):
 
-`https://<project-ref>.supabase.co/functions/v1/yoco-webhook`
+`https://hnhmfnundobuarvfbaae.supabase.co/functions/v1/yoco-webhook`
 
 Subscribe it to `payment.succeeded` and `payment.failed`. Save the `whsec_` secret immediately.
 
@@ -87,7 +91,7 @@ Customers can read their own orders. A POP account can read orders for its `pop_
 4. Register the webhook again in **live** mode. The secret is new. `npx supabase secrets set YOCO_WEBHOOK_SECRET=whsec_…`
 5. Set `EXPO_PUBLIC_PAYMENTS_MODE=live` and redeploy the site.
 
-Test and live secrets are not interchangeable. Leave `EXPO_PUBLIC_PAYMENTS_MODE=stub` for the demo with no keys, or `sandbox` while the `sk_test_` key is installed. Payments under R2.00 are rejected by Yoco.
+Test and live secrets are not interchangeable. Keep `EXPO_PUBLIC_PAYMENTS_MODE=sandbox` while the `sk_test_` key is installed. Payments under R2.00 are rejected by Yoco. Yoco is the only checkout method.
 
 The success, cancel, and failure pages are `/checkout/success`, `/checkout/cancel`, and `/checkout/failure`. Do not treat the success page as proof of payment. The webhook is the receipt.
 
@@ -102,7 +106,24 @@ npx serve dist
 
 ### Vercel
 
-Import the Git repository. Framework preset: Other. Build command `npx expo export --platform web`. Output directory `dist`. Add the public env vars (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_YOCO_PUBLIC_KEY`, `EXPO_PUBLIC_PAYMENTS_MODE`). Do not add the Yoco secret or the service role. Attach the domain, then set `ALLOWED_RETURN_ORIGINS` on the Edge Function to that origin.
+`vercel.json` already sets this. In the project settings, confirm:
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | Other |
+| Install command | `npm install` |
+| Build command | `npx expo export --platform web` |
+| Output directory | `dist` |
+
+Vercel environment variables (all public, baked in at build time):
+
+- `EXPO_PUBLIC_SUPABASE_URL` = `https://hnhmfnundobuarvfbaae.supabase.co`
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` = the anon key from Supabase → Project Settings → API
+- `EXPO_PUBLIC_YOCO_PUBLIC_KEY` = `YOCO_PUBLIC_KEY` (`pk_test_…` to start)
+- `EXPO_PUBLIC_PAYMENTS_MODE` = `sandbox`
+- `EXPO_PUBLIC_ORDER_CUTOFF` = leave unset until the cut-off is confirmed
+
+Do not add `YOCO_SECRET_KEY`, `YOCO_WEBHOOK_SECRET`, or the service role key to Vercel. Those stay on Supabase. Attach the domain, then set the Edge Function secret `ALLOWED_RETURN_ORIGINS` to that origin.
 
 ### Netlify
 
@@ -110,13 +131,13 @@ Build command `npx expo export --platform web`. Publish directory `dist`. Same p
 
 ## Local demo without keys
 
-Leave the Supabase and Yoco variables empty and `EXPO_PUBLIC_PAYMENTS_MODE=stub`.
+Without the anon key and the Yoco public key, the catalogue stays on the seed data and the Pay with Yoco button waits for those keys. It does not invent a successful card payment.
 
 ```bash
 npm install
 npx expo start --web
 ```
 
-The menu (development builds) can switch Customer / POP / Admin. Place an order from the catalogue: it is marked paid and confirmed on this device only. In Admin → Orders, move it to “Left the butchery”, then “Ready at pickup” (that shows the collection code). Sign in as the POP partner and mark it collected with that code.
+The menu (development builds) can switch Customer / POP / Admin. The existing demo order is on the admin list. Move it to “Left the butchery”, then “Ready at pickup” (that shows the collection code). Sign in as the POP partner and mark it collected with that code. A new customer order is marked paid only after the Yoco webhook.
 
 Low stock and out-of-stock cuts show the next cut date. The order cut-off and the cold-chain rule are on the shop and on checkout.

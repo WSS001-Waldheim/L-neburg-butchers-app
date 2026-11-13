@@ -615,7 +615,8 @@ insert into public.carcass_batches (
   '2023-02-03', 'Ouderdam Farm, Lüneburg', '2026-08-15', '2026-08-19',
   'A quiet animal with strong frame — typical of our Drakensberg line. Grazed the same camps as his sire. We wait for the fat colour and size we want before we cut.',
   'Used primarily for braai-box and sausage trim after premium steaks were pulled. Traceability still runs ear tag to carcass to pack QR.'
-);
+)
+on conflict do nothing;
 
 insert into public.products (
   id, name, category, description, price_cents, pack_size, weight_grams, cut_notes,
@@ -650,7 +651,8 @@ insert into public.products (
   15500, '500g', 500, null, 'bratwurst', 1, 4, '2026-11-10T08:00:00+02:00', null),
 ('sausage-buddhawurst', 'Buddhawurst', 'sausages',
   'Salt and pepper style Buddhawurst — clean seasoning, no compromise.',
-  17500, '500g', 500, null, 'buddhawurst', 8, 4, '2026-11-10T08:00:00+02:00', null);
+  17500, '500g', 500, null, 'buddhawurst', 8, 4, '2026-11-10T08:00:00+02:00', null)
+on conflict do nothing;
 
 insert into public.pops (
   id, code, name, status, area_label, phase, address_line1, address_line2, city, region,
@@ -679,7 +681,8 @@ insert into public.pops (
   '{"weekly":[{"day":0,"open":"00:00","close":"00:00","closed":true},{"day":1,"open":"09:00","close":"17:00"},{"day":2,"open":"09:00","close":"17:00"},{"day":3,"open":"09:00","close":"17:00"},{"day":4,"open":"09:00","close":"17:00"},{"day":5,"open":"09:00","close":"17:00"},{"day":6,"open":"09:00","close":"13:00"}],"note":"Collection hours are confirmed with your order."}'::jsonb,
   'Bring your collection code and collect promptly once the order is marked ready.',
   3
-);
+)
+on conflict do nothing;
 
 -- Sample order for the admin queue. No customer account is attached.
 insert into public.orders (
@@ -692,13 +695,16 @@ insert into public.orders (
   'confirmed', 'packing', 'pop_collect', 'ultimate-outdoor-piet-retief',
   94300, 'stub', 'paid', 94300,
   '2026-10-20T14:21:00+02:00', '2026-10-20T14:20:00+02:00', '2026-10-20T14:20:00+02:00'
-);
+)
+on conflict do nothing;
 
 insert into public.order_items (order_id, product_id, product_name, quantity, unit_price_cents) values
   ('ord-demo-001', 'vsp-ribeye', 'Ribeye VSP', 2, 38900),
-  ('ord-demo-001', 'sausage-medwurst', 'Medwurst', 1, 16500);
+  ('ord-demo-001', 'sausage-medwurst', 'Medwurst', 1, 16500)
+on conflict do nothing;
 
 insert into public.order_status_events (id, order_id, from_status, to_status, store_status, created_at, actor_role, note) values
   ('ev-demo-1', 'ord-demo-001', null, 'placed', 'pending_payment', '2026-10-20T14:20:00+02:00', 'customer', 'Order placed'),
   ('ev-demo-2', 'ord-demo-001', 'placed', 'confirmed', 'confirmed', '2026-10-20T14:21:00+02:00', 'system', 'Payment received'),
-  ('ev-demo-3', 'ord-demo-001', 'confirmed', 'packing', 'confirmed', '2026-10-20T14:22:00+02:00', 'admin', 'Packing');
+  ('ev-demo-3', 'ord-demo-001', 'confirmed', 'packing', 'confirmed', '2026-10-20T14:22:00+02:00', 'admin', 'Packing')
+on conflict do nothing;

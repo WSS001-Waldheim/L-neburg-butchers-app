@@ -39,8 +39,7 @@ export function createYocoPaymentProvider(
   return {
     id: 'yoco',
 
-    async isAvailable(ctx: PaymentAvailabilityContext): Promise<boolean> {
-      if (ctx.paymentsMode === 'stub') return false;
+    async isAvailable(_ctx: PaymentAvailabilityContext): Promise<boolean> {
       if (!publicKey) return false;
       const supabaseUrl =
         typeof process !== 'undefined'

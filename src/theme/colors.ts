@@ -1,14 +1,19 @@
 /**
- * Lüneburg visual direction: green & gold, wood vibe.
- * Avoid purple gradients, cream+terracotta AI defaults, clinical modern.
+ * Lüneburg label colours from the KP 80-year artwork, on the wood ground.
+ * Primary dark green #1E2417, gold #CEA845, deep gold #A98938.
+ *
+ * Deep gold is for marks on the green field (contrast about 4.8:1).
+ * Small text on parchment uses forest or ink — deep gold on parchment is under 3:1.
+ * Wood, parchment, and ink stay so the heritage ground and body text remain readable.
  */
 export const colors = {
-  forest: '#1B3D2F',
-  forestMid: '#2A5240',
-  forestDeep: '#12281F',
-  gold: '#C9A227',
-  goldSoft: '#D4B84A',
-  goldMuted: '#A68B2E',
+  forest: '#1E2417',
+  forestMid: '#1E2417',
+  forestDeep: '#1E2417',
+  gold: '#CEA845',
+  goldSoft: '#CEA845',
+  /** Deep gold from the label. */
+  goldMuted: '#A98938',
   wood: '#6B4423',
   woodLight: '#8B5E3C',
   woodWash: '#C4A882',
@@ -20,7 +25,7 @@ export const colors = {
   white: '#FFFBF3',
   danger: '#8B3A2F',
   success: '#2F5D3A',
-  overlay: 'rgba(18, 40, 31, 0.72)',
+  overlay: 'rgba(30, 36, 23, 0.72)',
 } as const;
 
 export type ColorName = keyof typeof colors;

@@ -14,8 +14,10 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '../src/auth/AuthContext';
+import { OpeningSplash } from '../src/components/OpeningSplash';
 import { CartProvider } from '../src/context/CartContext';
 import { CatalogProvider } from '../src/context/CatalogContext';
 import { OrdersProvider } from '../src/context/OrdersContext';
@@ -39,7 +41,22 @@ export default function RootLayout() {
     if (loaded) SplashScreen.hideAsync().catch(() => undefined);
   }, [loaded]);
 
-  if (!loaded) return null;
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.style.overflowX = 'hidden';
+    document.body.style.overflowX = 'hidden';
+    document.body.style.margin = '0';
+  }, []);
+
+  if (!loaded) {
+    return (
+      <>
+        <StatusBar style="light" />
+        <OpeningSplash />
+      </>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

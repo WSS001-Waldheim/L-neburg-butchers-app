@@ -1,9 +1,10 @@
 {
+  "installCommand": "npm install",
   "buildCommand": "npx expo export --platform web",
   "outputDirectory": "dist",
   "devCommand": "npx expo start --web",
-  "cleanUrls": true,
   "framework": null,
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]

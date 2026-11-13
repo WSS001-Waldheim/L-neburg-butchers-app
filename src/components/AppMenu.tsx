@@ -153,9 +153,13 @@ function MenuItem({
 
 const styles = StyleSheet.create({
   burger: {
-    padding: 10,
+    minWidth: 48,
+    minHeight: 48,
+    padding: 12,
     gap: 5,
     zIndex: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bar: {
     width: 22,
