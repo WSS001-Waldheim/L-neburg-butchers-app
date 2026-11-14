@@ -164,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: input.email.trim(),
       password: input.password,
       options: {
-        emailRedirectTo: adminResetUrl().replace(/\/reset-password$/, ''),
+        emailRedirectTo: adminResetUrl(),
         data: {
           full_name: input.name.trim(),
           phone: input.phone.trim(),

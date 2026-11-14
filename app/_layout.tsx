@@ -10,13 +10,15 @@ import {
   SourceSans3_700Bold,
 } from '@expo-google-fonts/source-sans-3';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { establishSessionFromUrl } from '../src/auth/authRedirect';
 import { AuthProvider } from '../src/auth/AuthContext';
+import { getSupabase, isSupabaseConfigured } from '../src/data/supabaseClient';
 import { OpeningSplash } from '../src/components/OpeningSplash';
 import { CartProvider } from '../src/context/CartContext';
 import { CatalogProvider } from '../src/context/CatalogContext';
@@ -28,6 +30,7 @@ import { colors } from '../src/theme/colors';
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 export default function RootLayout() {
+  const router = useRouter();
   const [loaded] = useFonts({
     CormorantGaramond_600SemiBold,
     CormorantGaramond_700Bold,
@@ -40,6 +43,34 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync().catch(() => undefined);
   }, [loaded]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    let cancelled = false;
+    void establishSessionFromUrl().then((result) => {
+      if (cancelled || result.kind === 'none') return;
+      if (result.kind === 'error') {
+        router.replace(
+          `/admin/reset-password?authError=${encodeURIComponent(result.message)}`,
+        );
+        return;
+      }
+      router.replace('/admin/reset-password');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !isSupabaseConfigured()) return;
+    const { data } = getSupabase().auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        router.replace('/admin/reset-password');
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;

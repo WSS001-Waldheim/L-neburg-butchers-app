@@ -1,4 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { captureAuthUrl } from '../auth/authRedirect';
+
+captureAuthUrl();
 
 /**
  * Live catalogue, orders, and auth when both public env vars are set.
@@ -57,6 +60,7 @@ export function getSupabase(): SupabaseClient {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        flowType: 'implicit',
         storage: webStorage,
       },
     });

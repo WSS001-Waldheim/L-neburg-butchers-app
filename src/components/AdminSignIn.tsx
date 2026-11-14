@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
 import { isDemoMode } from '../config/demo';
 import { isSupabaseConfigured } from '../data/supabaseClient';
@@ -8,8 +8,6 @@ import { type } from '../theme/typography';
 import { PrimaryButton } from './PrimaryButton';
 import { StoreColumn } from './StoreColumn';
 import { WoodBackground } from './WoodBackground';
-
-type Mode = 'sign-in' | 'set-password';
 
 /**
  * Live admin access is a Supabase session whose profile role is admin.
@@ -26,11 +24,9 @@ export function canAccessAdmin(
 }
 
 export function AdminSignIn() {
-  const { signIn, signUp, requestPasswordReset, loginAs, user, liveSession } = useAuth();
-  const [mode, setMode] = useState<Mode>('sign-in');
+  const { signIn, requestPasswordReset, loginAs, user, liveSession } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,43 +42,10 @@ export function AdminSignIn() {
     try {
       await requestPasswordReset(email);
       setMessage(
-        'If that email has an account, a link is on its way. Open it on this phone and choose a new password.',
+        'Check your email. Open the link on this phone. It brings you back here to choose a password. Supabase’s own mail is slow and rate-limited, so wait a minute before trying again.',
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send the email');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const choosePassword = async () => {
-    if (password.length < 8) {
-      setError('Use at least 8 characters.');
-      return;
-    }
-    if (password !== confirm) {
-      setError('Those passwords do not match.');
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const result = await signUp({
-        name: 'Karl',
-        phone: '',
-        email,
-        password,
-      });
-      if (result === 'confirm-email') {
-        setMessage(
-          'Check your email and confirm the address, then come back and sign in. Your password is the one you just chose.',
-        );
-        setPassword('');
-        setConfirm('');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not set the password');
     } finally {
       setBusy(false);
     }
@@ -108,7 +71,7 @@ export function AdminSignIn() {
           <Text style={styles.kicker}>Lüneburg</Text>
           <Text style={styles.heading}>Admin</Text>
           <Text style={styles.body}>
-            Orders, prices, and stock. Sign in with the email and password you chose.
+            Orders, prices, and stock. Sign in with your email and password, or email yourself a link to set one.
           </Text>
 
           {signedInButNotAdmin ? (
@@ -129,97 +92,36 @@ export function AdminSignIn() {
             placeholderTextColor={colors.woodLight}
           />
 
-          {mode === 'sign-in' ? (
-            <>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                style={styles.input}
-                secureTextEntry
-                autoComplete="current-password"
-                placeholderTextColor={colors.woodLight}
-              />
-              {error ? <Text style={styles.error}>{error}</Text> : null}
-              {message ? <Text style={styles.message}>{message}</Text> : null}
-              <PrimaryButton
-                label="Sign in"
-                onPress={() => {
-                  void submitSignIn();
-                }}
-                loading={busy}
-                disabled={email.trim().length < 5 || password.length < 8}
-                style={{ marginTop: 16 }}
-              />
-              <PrimaryButton
-                label="Set / forgot password"
-                variant="ghost"
-                onPress={() => {
-                  setMode('set-password');
-                  setError(null);
-                  setMessage(null);
-                  setPassword('');
-                }}
-                style={{ marginTop: 8 }}
-              />
-            </>
-          ) : (
-            <>
-              <Text style={styles.body}>
-                First time: choose a password below. It is saved only in Supabase, not in the app.
-                Already have one: email yourself a link and set a new password on the next page.
-              </Text>
-              <Text style={styles.label}>New password</Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                style={styles.input}
-                secureTextEntry
-                autoComplete="new-password"
-                placeholderTextColor={colors.woodLight}
-              />
-              <Text style={styles.label}>Confirm password</Text>
-              <TextInput
-                value={confirm}
-                onChangeText={setConfirm}
-                style={styles.input}
-                secureTextEntry
-                autoComplete="new-password"
-                placeholderTextColor={colors.woodLight}
-              />
-              {error ? <Text style={styles.error}>{error}</Text> : null}
-              {message ? <Text style={styles.message}>{message}</Text> : null}
-              <PrimaryButton
-                label="Set my password"
-                onPress={() => {
-                  void choosePassword();
-                }}
-                loading={busy}
-                disabled={email.trim().length < 5 || password.length < 8}
-                style={{ marginTop: 16 }}
-              />
-              <PrimaryButton
-                label="Email me a reset link"
-                variant="forest"
-                onPress={() => {
-                  void sendReset();
-                }}
-                loading={busy}
-                disabled={email.trim().length < 5}
-                style={{ marginTop: 8 }}
-              />
-              <PrimaryButton
-                label="Back to sign in"
-                variant="ghost"
-                onPress={() => {
-                  setMode('sign-in');
-                  setError(null);
-                  setMessage(null);
-                }}
-                style={{ marginTop: 8 }}
-              />
-            </>
-          )}
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+            secureTextEntry
+            autoComplete="current-password"
+            placeholderTextColor={colors.woodLight}
+          />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {message ? <Text style={styles.message}>{message}</Text> : null}
+          <PrimaryButton
+            label="Sign in"
+            onPress={() => {
+              void submitSignIn();
+            }}
+            loading={busy}
+            disabled={email.trim().length < 5 || password.length < 6}
+            style={{ marginTop: 16 }}
+          />
+          <PrimaryButton
+            label="Email me a link to set/reset my password"
+            variant="forest"
+            onPress={() => {
+              void sendReset();
+            }}
+            loading={busy}
+            disabled={email.trim().length < 5}
+            style={{ marginTop: 8 }}
+          />
 
           {!isSupabaseConfigured() && isDemoMode() ? (
             <PrimaryButton

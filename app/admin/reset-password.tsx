@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 import { useAuth } from '../../src/auth/AuthContext';
@@ -15,13 +15,14 @@ import { type } from '../../src/theme/typography';
  */
 export default function ResetPasswordScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ authError?: string }>();
+  const linkError = Array.isArray(params.authError) ? params.authError[0] : params.authError;
   const { updatePassword, liveSession } = useAuth();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(linkError ?? null);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -50,9 +51,7 @@ export default function ResetPasswordScreen() {
     setError(null);
     try {
       await updatePassword(password);
-      setSaved(true);
-      setPassword('');
-      setConfirm('');
+      router.replace('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the password');
     } finally {
@@ -73,12 +72,13 @@ export default function ResetPasswordScreen() {
           ) : null}
           {!ready && !liveSession ? (
             <Text style={styles.body}>
-              Open the link in the email on this phone. If it has expired, request a new one from Admin.
+              {error
+                ? 'This link cannot be used. Go back to Admin and email yourself a new one.'
+                : 'Open the link in the email on this phone. If it has expired, request a new one from Admin.'}
             </Text>
           ) : null}
-          {saved ? (
-            <Text style={styles.ok}>Password saved. Sign in with it on the admin page.</Text>
-          ) : (
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {ready || liveSession ? (
             <>
               <Text style={styles.label}>New password</Text>
               <TextInput
@@ -98,7 +98,6 @@ export default function ResetPasswordScreen() {
                 autoComplete="new-password"
                 placeholderTextColor={colors.woodLight}
               />
-              {error ? <Text style={styles.error}>{error}</Text> : null}
               <PrimaryButton
                 label="Save password"
                 onPress={() => {
@@ -109,7 +108,7 @@ export default function ResetPasswordScreen() {
                 style={{ marginTop: 16 }}
               />
             </>
-          )}
+          ) : null}
           <PrimaryButton
             label="Back to admin"
             variant="ghost"

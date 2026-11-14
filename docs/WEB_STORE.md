@@ -140,16 +140,16 @@ In the Supabase dashboard, Authentication → URL configuration:
 - Site URL: `https://luneburg-shop.vercel.app`
 - Redirect URLs: `https://luneburg-shop.vercel.app/**`
 
-Authentication → Providers → Email stays on. “Allow new users to sign up” stays on until Karl has created his password. If “Confirm email” is on, he must open the confirmation email before the first sign-in.
+Authentication → Providers → Email stays on. The invite and reset links must be allowed to return to the site above. Supabase’s built-in mail is rate-limited.
 
-Karl’s first password, on his phone:
+Karl is invited from the dashboard (no password is created in the app):
 
-1. Open `https://luneburg-shop.vercel.app/admin`
-2. Tap **Set / forgot password**
-3. Enter `karl@wssfarming.co.za` and a password he chooses, then **Set my password**
-4. If a confirmation email arrives, open it, then **Sign in** with that same password
+1. Open the invite email on the phone, or go to https://luneburg-shop.vercel.app/admin, enter `karl@wssfarming.co.za`, and tap **Email me a link to set/reset my password**.
+2. The link opens **New password** (even when Supabase first sends the browser to the shop home).
+3. Type a password, confirm it, tap **Save password**. Admin opens, signed in.
+4. Next visit: **Sign in** with that email and password.
 
-Later, **Email me a reset link** sends him to `https://luneburg-shop.vercel.app/admin/reset-password`, where he types a new password.
+An expired link shows Supabase’s message, such as `otp_expired`, on that page.
 
 ## Local demo without keys
 
