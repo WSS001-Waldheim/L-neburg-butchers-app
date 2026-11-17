@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { WoodBackground } from '../src/components/WoodBackground';
-import { ColdChainNotice, OrderCutoffNotice } from '../src/components/OrderNotices';
+import { ColdChainNotice, CollectionNotice } from '../src/components/OrderNotices';
 import { FARM_PLACE } from '../src/data/place';
 import { BUG_REPORT_EMAIL } from '../src/support/bugReport';
 import { colors } from '../src/theme/colors';
@@ -12,12 +12,13 @@ export default function HelpScreen() {
     <WoodBackground>
       <View style={styles.content}>
         <Text style={styles.heading}>Help / Support</Text>
-        <OrderCutoffNotice />
+        <CollectionNotice />
         <ColdChainNotice />
         <Text style={styles.body}>
-          Lüneburg Country Butchery · {FARM_PLACE}. Cold chain once packed is
-          20–24 hours. Collect promptly once your order is marked ready. No
-          returns for ordering errors after the parcel leaves the butchery.
+          Lüneburg Country Butchery · {FARM_PLACE}. Your order is packed in a
+          box and waiting for you at your pickup point — collect whenever suits
+          you. No returns for an ordering mistake after the parcel leaves the
+          butchery. Keep the packs cold.
         </Text>
         <Text style={styles.body}>Support: {BUG_REPORT_EMAIL}</Text>
       </View>

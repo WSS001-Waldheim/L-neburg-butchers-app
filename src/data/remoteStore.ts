@@ -485,6 +485,97 @@ export async function fetchOrders(): Promise<Order[]> {
   return rows.map(orderFromRow);
 }
 
+type GuestOrderPayload = {
+  id: string;
+  orderRef: string;
+  createdAt: string;
+  customerName: string;
+  phone?: string | null;
+  email?: string | null;
+  notes?: string | null;
+  status: string;
+  fulfilmentStatus?: string | null;
+  paymentStatus?: string | null;
+  fulfilment?: string | null;
+  popId?: string | null;
+  totalCents: number;
+  collectionCode?: string | null;
+  packCheckAcceptedAt?: string | null;
+  lines?: OrderLine[];
+  events?: {
+    id: string;
+    fromStatus?: string | null;
+    toStatus: string;
+    storeStatus?: string | null;
+    createdAt: string;
+    actorRole?: string | null;
+    note?: string | null;
+    collectionCode?: string | null;
+  }[];
+};
+
+function orderFromGuestPayload(raw: GuestOrderPayload): Order {
+  const paymentStatus = asPaymentStatus(raw.paymentStatus ?? 'pending');
+  const fulfilmentStatus = (raw.fulfilmentStatus || 'placed') as PopFulfilmentStatus;
+  const fulfilment = raw.fulfilment as FulfilmentMethod;
+  const storeStatus: StoreOrderStatus = isStoreOrderStatus(raw.status)
+    ? raw.status
+    : storeStatusForFulfilment(fulfilmentStatus, paymentStatus);
+  return {
+    id: raw.id,
+    orderRef: raw.orderRef,
+    createdAt: raw.createdAt,
+    customerName: raw.customerName,
+    phone: raw.phone ?? '',
+    email: raw.email ?? undefined,
+    notes: raw.notes ?? undefined,
+    lines: raw.lines ?? [],
+    totalCents: raw.totalCents,
+    fulfilment:
+      fulfilment === 'pop_collect' ||
+      fulfilment === 'local_delivery' ||
+      fulfilment === 'whatsapp_pickup' ||
+      fulfilment === 'pretoria_delivery'
+        ? fulfilment
+        : 'pop_collect',
+    popId: raw.popId ?? undefined,
+    storeStatus,
+    fulfilmentStatus,
+    collectionCode: raw.collectionCode ?? undefined,
+    packCheckAcceptedAt: raw.packCheckAcceptedAt ?? raw.createdAt,
+    statusEvents: (raw.events ?? []).map((event) => ({
+      id: event.id,
+      orderId: raw.id,
+      fromStatus: (event.fromStatus as PopFulfilmentStatus | null) ?? null,
+      toStatus: event.toStatus as PopFulfilmentStatus,
+      storeStatus:
+        event.storeStatus && isStoreOrderStatus(event.storeStatus)
+          ? event.storeStatus
+          : null,
+      createdAt: event.createdAt,
+      actorRole: event.actorRole ?? undefined,
+      note: event.note,
+      collectionCode: event.collectionCode,
+    })),
+    paymentMethod: 'yoco',
+    paymentStatus,
+    amountEstimated: { cents: raw.totalCents, currency: 'ZAR' },
+  };
+}
+
+/** One order, and only when the caller has that order's token. */
+export async function fetchOrderByGuestToken(token: string): Promise<Order | null> {
+  const trimmed = token.trim();
+  if (trimmed.length < 32) return null;
+  const supabase = getSupabase();
+  const { data, error } = await supabase.rpc('order_by_guest_token', {
+    p_token: trimmed,
+  });
+  if (error) throw new Error(`Load order: ${error.message}`);
+  if (!data || typeof data !== 'object') return null;
+  return orderFromGuestPayload(data as GuestOrderPayload);
+}
+
 export async function saveOrder(
   order: Order,
   options: { replaceLines?: boolean } = {},

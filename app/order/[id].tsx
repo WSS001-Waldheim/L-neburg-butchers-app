@@ -3,27 +3,40 @@ import React, { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../../src/auth/AuthContext';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { StoreColumn } from '../../src/components/StoreColumn';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useOrders } from '../../src/context/OrdersContext';
+import { useGuestOrder } from '../../src/data/useGuestOrder';
 import {
   nextStoreStatuses,
   storeStatusActionLabel,
   storeStatusLabel,
 } from '../../src/data/storeStatus';
 import { formatPrice } from '../../src/data/types';
+import { COLLECTION } from '../../src/config/orderCutoff';
 import { buildOrderTimeline } from '../../src/notifications/useOrderTimeline';
 import { customerVisibleLine } from '../../src/pop/customerCopy';
 import { customerFulfilmentLabel } from '../../src/pop/orderPopFields';
+import { readGuestToken } from '../../src/payments/yocoCheckout';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
+function one(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw?.trim() ?? '';
+}
+
 export default function OrderStatusScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; token?: string }>();
+  const id = String(params.id);
   const { getOrder, setStoreStatus } = useOrders();
+  const listed = getOrder(id);
+  const token = one(params.token) || readGuestToken(id) || '';
+  const { order: guest, loading } = useGuestOrder(listed ? null : token);
+  const order = listed ?? guest;
   const { findPop } = usePopLocations();
   const { user } = useAuth();
-  const order = getOrder(String(id));
   const pop = order?.popId ? findPop(order.popId) : undefined;
 
   const timeline = useMemo(
@@ -34,7 +47,9 @@ export default function OrderStatusScreen() {
   if (!order) {
     return (
       <WoodBackground style={styles.missing}>
-        <Text style={styles.missingText}>Order not found.</Text>
+        <Text style={styles.missingText}>
+          {loading ? 'Loading your order…' : 'Order not found.'}
+        </Text>
         <Link href="/" asChild>
           <PrimaryButton label="Catalogue" onPress={() => undefined} />
         </Link>
@@ -50,6 +65,7 @@ export default function OrderStatusScreen() {
   return (
     <WoodBackground>
       <Stack.Screen options={{ title: order.orderRef }} />
+      <StoreColumn>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.statusLabel}>Status</Text>
         <Text style={styles.status}>{storeStatusLabel(order.storeStatus)}</Text>
@@ -66,7 +82,7 @@ export default function OrderStatusScreen() {
           order.fulfilmentStatus === 'ready_for_collection') &&
         pop ? (
           <View style={styles.codeCard}>
-            <Text style={styles.codeLabel}>Ready for collection at</Text>
+            <Text style={styles.codeLabel}>Packed and waiting at</Text>
             <Text style={styles.codePop}>{pop.name}</Text>
             <Text style={styles.codeValue}>{order.collectionCode}</Text>
             <Text style={styles.codeMeta}>
@@ -82,16 +98,21 @@ export default function OrderStatusScreen() {
 
         {pop && order.fulfilment === 'pop_collect' ? (
           <View style={styles.block}>
-            <Text style={styles.blockLabel}>Point of Pickup</Text>
+            <Text style={styles.blockLabel}>Pickup point</Text>
             <Text style={styles.blockValue}>{pop.name}</Text>
             <Text style={styles.blockMeta}>
               {pop.addressLine1}
               {pop.addressLine2 ? ` · ${pop.addressLine2}` : ''} · {pop.city}
             </Text>
+            {order.storeStatus !== 'collected' && order.storeStatus !== 'cancelled' ? (
+              <Text style={styles.blockMeta}>{COLLECTION.short}</Text>
+            ) : null}
           </View>
         ) : null}
 
-        <Text style={styles.linesHeading}>Courier timeline</Text>
+        {timeline.length > 0 ? (
+          <Text style={styles.linesHeading}>Order progress</Text>
+        ) : null}
         {timeline.map((row, idx) => {
           const current = idx === timeline.length - 1;
           return (
@@ -158,6 +179,7 @@ export default function OrderStatusScreen() {
           />
         </Link>
       </ScrollView>
+      </StoreColumn>
     </WoodBackground>
   );
 }

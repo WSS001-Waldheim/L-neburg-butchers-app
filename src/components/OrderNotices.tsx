@@ -1,15 +1,15 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLD_CHAIN_RULE, ORDER_CUTOFF } from '../config/orderCutoff';
+import { COLD_CHAIN_RULE, COLLECTION } from '../config/orderCutoff';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 
-export function OrderCutoffNotice({ compact = false }: { compact?: boolean }) {
+export function CollectionNotice({ compact = false }: { compact?: boolean }) {
   return (
     <View style={[styles.box, compact && styles.boxCompact]}>
-      <Text style={styles.kicker}>{ORDER_CUTOFF.label}</Text>
-      <Text style={styles.when}>{ORDER_CUTOFF.when}</Text>
-      {compact ? null : <Text style={styles.detail}>{ORDER_CUTOFF.detail}</Text>}
+      <Text style={styles.kicker}>{COLLECTION.label}</Text>
+      <Text style={styles.when}>{COLLECTION.when}</Text>
+      {compact ? null : <Text style={styles.detail}>{COLLECTION.detail}</Text>}
     </View>
   );
 }

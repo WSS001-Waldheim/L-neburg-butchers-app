@@ -23,7 +23,11 @@ export default function MyOrdersScreen() {
           {user ? 'Your orders' : 'Orders'}
         </Text>
         {mine.length === 0 ? (
-          <Text style={styles.empty}>No orders yet — place one from the catalogue.</Text>
+          <Text style={styles.empty}>
+            {user
+              ? 'No orders yet. Place one from the catalogue.'
+              : 'Sign in to see orders on your account. A guest order opens from its confirmation link.'}
+          </Text>
         ) : (
           mine.map((o) => {
             const pop = o.popId ? findPop(o.popId) : undefined;
@@ -36,7 +40,8 @@ export default function MyOrdersScreen() {
                     {pop ? ` · ${pop.name}` : ''}
                   </Text>
                   <Text style={styles.meta}>
-                    {formatPrice(o.totalCents)} · {o.lines.length} line(s)
+                    {formatPrice(o.totalCents)} · {o.lines.length}{' '}
+                    {o.lines.length === 1 ? 'line' : 'lines'}
                     {o.collectionCode ? ` · ${o.collectionCode}` : ''}
                   </Text>
                 </Pressable>

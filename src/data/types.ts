@@ -6,7 +6,9 @@ export type ProductSection = 'premium-vsp' | 'braai-boxes' | 'sausages';
 
 export type StockStatus = 'in_stock' | 'low' | 'out_of_stock';
 
-/** Legacy delivery modes — still available alongside POP collect. */
+/**
+ * New orders are pickup only. Older rows may still carry a delivery value.
+ */
 export type FulfilmentMethod =
   | 'pop_collect'
   | 'local_delivery'

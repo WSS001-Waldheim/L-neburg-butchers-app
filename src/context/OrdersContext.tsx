@@ -198,6 +198,12 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (mode !== 'supabase' || !authReady) return;
+    if (!liveSession) {
+      setOrders([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     void refresh();
   }, [mode, authReady, user?.id, liveSession, refresh]);
 

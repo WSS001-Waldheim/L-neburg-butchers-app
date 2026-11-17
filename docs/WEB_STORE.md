@@ -8,12 +8,15 @@ The same Expo app is the shop. With no Supabase keys it keeps using the in-memor
 
 - Postgres schema, row level security, and seed catalogue in `supabase/setup.sql` (paste into the SQL editor) and `supabase/migrations`.
 - Shop, cart, and checkout read that data when the public env vars are set, and the seed otherwise.
-- Yoco hosted checkout is the only payment method: card, and Apple Pay in Safari on iPhone. The secret never ships in the client. Starts in test mode (`pk_test_` / `sk_test_`).
-- `yoco-webhook` checks the Standard Webhooks signature and marks the order **paid**. Karl confirms it in admin before it leaves the butchery.
-- Admin screens for products (price, pack size, photo, stock, next arrival), order status, and POP approve / activate.
-- POP screen: orders assigned to that point, collected only with the collection code.
-- Until `EXPO_PUBLIC_ORDER_CUTOFF` is set, the shop says “Order ahead for collection at Ultimate Outdoor, Piet Retief”.
+- Yoco hosted checkout is the only payment method: card, and Apple Pay in Safari on iPhone. There is no pay-on-collection. The secret never ships in the client. Starts in test mode (`pk_test_` / `sk_test_`, `EXPO_PUBLIC_PAYMENTS_MODE=sandbox`).
+- A customer can pay without an account. Checkout collects a name, mobile number, email (for the receipt) and a pickup point. Signing in is optional and attaches the order to that account.
+- `create-checkout` creates the order with the service role, stores only a hash of a random order token, and returns the token once. A guest opens the confirmation with that token. Anonymous users cannot list orders.
+- `yoco-webhook` checks the Standard Webhooks signature and marks the order **paid**, including a guest order. Karl confirms it in admin before it leaves the butchery.
+- Pickup only. The first live point is Ultimate Outdoor. The price on the product is the full price. There is no delivery option and no separate travel charge.
+- There is no order cut-off. The shop says the order is packed in a box and waiting at the pickup point, and the customer collects whenever it suits them.
 - Cold-chain no-returns rule on checkout, with the pack-check still required.
+- Admin screens for products (price, pack size, photo, stock, next arrival), order status, and pickup-point approve / activate.
+- Pickup-point screen: orders assigned to that point, collected only with the collection code.
 - Low and out-of-stock cuts keep showing the next arrival date. The line “Scarcity is part of the brand” is not used.
 
 ## What still needs Karl’s accounts
@@ -24,12 +27,11 @@ Nothing here can charge a card or persist an order until the project, keys, and 
 
 | Item | Where it goes | Notes |
 | --- | --- | --- |
-| Supabase project `hnhmfnundobuarvfbaae` | Already created (eu-central-1) | Paste `supabase/setup.sql` in the SQL editor. |
+| Supabase project `hnhmfnundobuarvfbaae` | Already created (eu-central-1) | For a new database, paste `supabase/setup.sql`. For this hosted project, run `supabase/migrations/20261117140000_guest_checkout.sql` instead. |
 | `EXPO_PUBLIC_SUPABASE_URL` | Vercel | `https://hnhmfnundobuarvfbaae.supabase.co` |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Vercel | Publishable anon key. Not the service role. |
 | `EXPO_PUBLIC_YOCO_PUBLIC_KEY` | Vercel | The `YOCO_PUBLIC_KEY` value. Start with `pk_test_…`. |
 | `EXPO_PUBLIC_PAYMENTS_MODE` | Vercel | `sandbox` for test. `live` only after the live keys. |
-| `EXPO_PUBLIC_ORDER_CUTOFF` | Vercel, optional | Leave empty until the real cut-off is confirmed. |
 | `YOCO_SECRET_KEY` | Supabase secret, not Vercel | `sk_test_…` to start. |
 | `YOCO_WEBHOOK_SECRET` | Supabase secret, not Vercel | `whsec_…` from the test webhook. |
 | Service role key | Injected into Edge Functions | Never put it in Vercel or git. |
@@ -51,7 +53,31 @@ npx supabase functions deploy create-checkout
 npx supabase functions deploy yoco-webhook
 ```
 
-`create-checkout` requires a signed-in user. `yoco-webhook` does not use a Supabase JWT; the Yoco signature is the check (`verify_jwt = false` in `supabase/config.toml`).
+`create-checkout` accepts the anon key (guest) or a signed-in access token. `yoco-webhook` does not use a Supabase JWT; the Yoco signature is the check (`verify_jwt = false` in `supabase/config.toml`).
+
+### What to run on the hosted database
+
+The shop project is already past `supabase/setup.sql`. Do **not** paste `setup.sql` again. In the SQL editor, run the whole of:
+
+`supabase/migrations/20261117140000_guest_checkout.sql`
+
+That file:
+
+- adds `orders.guest_token_hash` and `orders.client_request_id`
+- adds `order_by_guest_token(text)` for anon and authenticated, and does not grant anon `select` on `orders`
+- renames the farm spelling Ouderdam to Ouderdom on existing carcass rows
+- removes the Buddhawurst product
+- updates pickup-point collection instructions
+
+Then redeploy the checkout function so guest orders are created server-side:
+
+```bash
+npx supabase functions deploy create-checkout
+```
+
+`yoco-webhook` does not need a redeploy for this change. `mark_order_paid` already updates by order id and does not require `customer_id`, so a guest order is marked paid the same way.
+
+With the CLI, `npx supabase db push` applies the new migration instead of pasting it.
 
 Register the webhook in the Yoco Business Portal (test mode first):
 
@@ -81,7 +107,7 @@ Pickup points start as `pending`. Admin approves (`approved`, still hidden), the
 
 `pending_payment` → `paid` (Yoco webhook, or an admin marking an offline payment) → `confirmed` (butchery) → `left_butchery` → `at_pop` (collection code is issued here) → `collected`. `cancelled` is only before the order leaves the butchery.
 
-Customers can read their own orders. A POP account can read orders for its `pop_id` and can only move `at_pop` to `collected`. Admins can read and update everything. A customer cannot set their own order to paid; the row guard rejects that.
+Customers with an account can read their own orders. A guest can read only the order whose token they were given, through `order_by_guest_token`. A POP account can read orders for its `pop_id` and can only move `at_pop` to `collected`. Admins can read and update everything. A customer cannot set their own order to paid; the row guard rejects that. New orders are created by `create-checkout`, not by the browser.
 
 ## Switching Yoco from test to live
 
@@ -121,7 +147,8 @@ Vercel environment variables (all public, baked in at build time):
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` = the anon key from Supabase → Project Settings → API
 - `EXPO_PUBLIC_YOCO_PUBLIC_KEY` = `YOCO_PUBLIC_KEY` (`pk_test_…` to start)
 - `EXPO_PUBLIC_PAYMENTS_MODE` = `sandbox`
-- `EXPO_PUBLIC_ORDER_CUTOFF` = leave unset until the cut-off is confirmed
+
+`EXPO_PUBLIC_ORDER_CUTOFF` is unused. Orders have no cut-off.
 
 Do not add `YOCO_SECRET_KEY`, `YOCO_WEBHOOK_SECRET`, or the service role key to Vercel. Those stay on Supabase. Attach the domain, then set the Edge Function secret `ALLOWED_RETURN_ORIGINS` to that origin.
 
@@ -162,4 +189,4 @@ npx expo start --web
 
 The menu (development builds) can switch Customer / POP / Admin. The existing demo order is on the admin list. Move it to “Left the butchery”, then “Ready at pickup” (that shows the collection code). Sign in as the POP partner and mark it collected with that code. A new customer order is marked paid only after the Yoco webhook.
 
-Low stock and out-of-stock cuts show the next cut date. The order cut-off and the cold-chain rule are on the shop and on checkout.
+Low stock and out-of-stock cuts show the next cut date. Checkout is pickup only, with Yoco, and a guest can pay without an account. The cold-chain rule is on the shop and on checkout.

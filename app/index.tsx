@@ -18,8 +18,7 @@ import { useCart } from '../src/context/CartContext';
 import { useCatalog } from '../src/context/CatalogContext';
 import { SECTION_META } from '../src/data/seed';
 import type { ProductSection } from '../src/data/types';
-import { ORDER_CUTOFF } from '../src/config/orderCutoff';
-import { OrderCutoffNotice } from '../src/components/OrderNotices';
+import { CollectionNotice } from '../src/components/OrderNotices';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
 
@@ -78,9 +77,8 @@ export default function HomeScreen() {
             No Compromise on Quality
           </Animated.Text>
           <Text style={styles.heroLine}>
-            Premium steaks and braai packs from Ouderdam Farm.
+            Premium steaks and braai packs from Ouderdom Farm.
           </Text>
-          <Text style={styles.cutoff}>{ORDER_CUTOFF.short}</Text>
           <View style={styles.ctaRow}>
             <Link href="/qr/LC-2026-0142" asChild>
               <Pressable style={styles.ctaGhost}>
@@ -91,7 +89,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.catalogue}>
-          <OrderCutoffNotice />
+          <CollectionNotice />
           {loading ? (
             <Text style={styles.sectionBlurb}>Loading the counter…</Text>
           ) : null}
@@ -150,13 +148,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     maxWidth: 320,
-  },
-  cutoff: {
-    ...type.caption,
-    color: colors.goldSoft,
-    textAlign: 'center',
-    marginTop: 14,
-    maxWidth: 340,
   },
   ctaRow: {
     flexDirection: 'row',

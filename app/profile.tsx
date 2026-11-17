@@ -54,7 +54,7 @@ export default function ProfileScreen() {
             <Text style={styles.name}>Signed out</Text>
             <Text style={styles.meta}>
               {isSupabaseConfigured()
-                ? 'Sign in to order, or create a customer account.'
+                ? 'Sign in to see orders on this account. You can also pay at checkout without an account.'
                 : 'Continue from checkout when you are ready to order.'}
             </Text>
             {isSupabaseConfigured() ? <AccountForm /> : null}

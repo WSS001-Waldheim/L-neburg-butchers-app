@@ -224,6 +224,10 @@ create table public.orders (
   pack_check_accepted_at timestamptz not null,
   cold_chain_clock_started_at timestamptz,
   pickup_location text,
+  -- SHA-256 hex of the guest confirmation token. The raw token is never stored.
+  guest_token_hash text,
+  -- Lets a double tap reuse the same unpaid order instead of creating another.
+  client_request_id text,
   updated_at timestamptz not null default now()
 );
 
@@ -259,6 +263,12 @@ create index orders_customer_idx on public.orders (customer_id);
 create index orders_pop_idx on public.orders (pop_id);
 create index orders_status_idx on public.orders (status);
 create index orders_yoco_checkout_idx on public.orders (yoco_checkout_id);
+create unique index orders_guest_token_hash_idx
+  on public.orders (guest_token_hash)
+  where guest_token_hash is not null;
+create unique index orders_client_request_idx
+  on public.orders (client_request_id)
+  where client_request_id is not null;
 
 create table public.pop_applications (
   id text primary key,
@@ -460,6 +470,90 @@ revoke all on function public.mark_order_payment_failed(text, text) from public;
 grant execute on function public.mark_order_paid(text, text, text, integer) to service_role;
 grant execute on function public.mark_order_payment_failed(text, text) to service_role;
 
+-- Guest confirmation. The raw token is not stored. Anon cannot select orders.
+create or replace function public.order_by_guest_token(p_token text)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public, extensions
+as $$
+declare
+  hashed text;
+  rec public.orders%rowtype;
+  items jsonb;
+  events jsonb;
+  pop_name text;
+  pop_address text;
+  pop_city text;
+begin
+  if p_token is null or length(btrim(p_token)) < 32 then
+    return null;
+  end if;
+
+  hashed := encode(digest(convert_to(btrim(p_token), 'UTF8'), 'sha256'), 'hex');
+  select * into rec from public.orders where guest_token_hash = hashed;
+  if not found then
+    return null;
+  end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'productId', product_id,
+    'productName', product_name,
+    'quantity', quantity,
+    'unitPriceCents', unit_price_cents
+  ) order by product_name), '[]'::jsonb)
+  into items
+  from public.order_items
+  where order_id = rec.id;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', id,
+    'fromStatus', from_status,
+    'toStatus', to_status,
+    'storeStatus', store_status,
+    'createdAt', created_at,
+    'actorRole', actor_role,
+    'note', note,
+    'collectionCode', collection_code
+  ) order by created_at), '[]'::jsonb)
+  into events
+  from public.order_status_events
+  where order_id = rec.id;
+
+  select name, address_line1, city
+  into pop_name, pop_address, pop_city
+  from public.pops
+  where id = rec.pop_id;
+
+  return jsonb_build_object(
+    'id', rec.id,
+    'orderRef', rec.order_ref,
+    'createdAt', rec.created_at,
+    'customerName', rec.customer_name,
+    'phone', rec.phone,
+    'email', rec.email,
+    'notes', rec.notes,
+    'status', rec.status,
+    'fulfilmentStatus', rec.fulfilment_status,
+    'paymentStatus', rec.payment_status,
+    'fulfilment', rec.fulfilment,
+    'popId', rec.pop_id,
+    'popName', pop_name,
+    'popAddress', pop_address,
+    'popCity', pop_city,
+    'totalCents', rec.total_cents,
+    'collectionCode', rec.collection_code,
+    'packCheckAcceptedAt', rec.pack_check_accepted_at,
+    'lines', items,
+    'events', events
+  );
+end;
+$$;
+
+revoke all on function public.order_by_guest_token(text) from public, anon, authenticated;
+grant execute on function public.order_by_guest_token(text) to anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- Row level security
 -- ---------------------------------------------------------------------------
@@ -612,6 +706,7 @@ create policy applications_update on public.pop_applications
 grant usage on schema public to anon, authenticated, service_role;
 grant select on public.products, public.pops, public.carcass_batches to anon, authenticated;
 grant select, update on public.profiles to authenticated;
+-- Anon is not granted select on orders. Guests use order_by_guest_token.
 grant select, insert, update on public.orders to authenticated;
 grant select, insert, update, delete on public.order_items to authenticated;
 grant select, insert on public.order_status_events to authenticated;
@@ -626,13 +721,13 @@ insert into public.carcass_batches (
 ) values
 (
   'batch-ox-214', 'ODB-214', 'LC-2026-0142', 'LC-2026-0142', 'Drakensberg',
-  '2023-04-12', 'Ouderdam Farm, Lüneburg', '2026-09-28', '2026-10-02',
-  'Born on Ouderdam under the Drakensberg foothills. Raised on our own pastures by the Lüneburg family — the same land and the same standards since 1946. Finished slowly for yellow fat and marbling that hold up in vacuum skin pack.',
+  '2023-04-12', 'Ouderdom Farm, Lüneburg', '2026-09-28', '2026-10-02',
+  'Born on Ouderdom under the Drakensberg foothills. Raised on our own pastures by the Lüneburg family — the same land and the same standards since 1946. Finished slowly for yellow fat and marbling that hold up in vacuum skin pack.',
   'Carcass LC-2026-0142 was broken by father and brother Ruben. Ear tag ODB-214 linked in Cleaver. Packs from this carcass carry one shared QR for the batch story.'
 ),
 (
   'batch-ox-198', 'ODB-198', 'LC-2026-0118', 'LC-2026-0118', 'Drakensberg',
-  '2023-02-03', 'Ouderdam Farm, Lüneburg', '2026-08-15', '2026-08-19',
+  '2023-02-03', 'Ouderdom Farm, Lüneburg', '2026-08-15', '2026-08-19',
   'A quiet animal with strong frame — typical of our Drakensberg line. Grazed the same camps as his sire. We wait for the fat colour and size we want before we cut.',
   'Used primarily for braai-box and sausage trim after premium steaks were pulled. Traceability still runs ear tag to carcass to pack QR.'
 )
@@ -668,10 +763,7 @@ insert into public.products (
   16500, '500g', 500, null, 'medwurst', 14, 4, '2026-11-10T08:00:00+02:00', null),
 ('sausage-bratwurst', 'Bratwurst', 'sausages',
   'German-style Bratwurst for the pan or the fire.',
-  15500, '500g', 500, null, 'bratwurst', 1, 4, '2026-11-10T08:00:00+02:00', null),
-('sausage-buddhawurst', 'Buddhawurst', 'sausages',
-  'Salt and pepper style Buddhawurst — clean seasoning, no compromise.',
-  17500, '500g', 500, null, 'buddhawurst', 8, 4, '2026-11-10T08:00:00+02:00', null)
+  15500, '500g', 500, null, 'bratwurst', 1, 4, '2026-11-10T08:00:00+02:00', null)
 on conflict do nothing;
 
 insert into public.pops (
@@ -683,7 +775,7 @@ insert into public.pops (
   '18 Smit Street', 'ex-Foggerful Megaworld', 'Piet Retief', 'Mpumalanga',
   -27.0035, 30.8132,
   '{"weekly":[{"day":0,"open":"00:00","close":"00:00","closed":true},{"day":1,"open":"09:00","close":"17:00"},{"day":2,"open":"09:00","close":"17:00"},{"day":3,"open":"09:00","close":"17:00"},{"day":4,"open":"09:00","close":"17:00"},{"day":5,"open":"09:00","close":"17:00"},{"day":6,"open":"09:00","close":"13:00"}],"note":"Collection hours are confirmed with your order."}'::jsonb,
-  'Bring your collection code and ID. Keep packs cold — collect promptly once marked ready. Site formerly Foggerful Megaworld.',
+  'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold. Site formerly Foggerful Megaworld.',
   1
 ),
 (
@@ -691,7 +783,7 @@ insert into public.pops (
   '291 Main Street', null, 'Pretoria', 'Gauteng',
   -25.7786, 28.2406,
   '{"weekly":[{"day":0,"open":"00:00","close":"00:00","closed":true},{"day":1,"open":"09:00","close":"17:00"},{"day":2,"open":"09:00","close":"17:00"},{"day":3,"open":"09:00","close":"17:00"},{"day":4,"open":"09:00","close":"17:00"},{"day":5,"open":"09:00","close":"17:00"},{"day":6,"open":"09:00","close":"13:00"}],"note":"Collection hours are confirmed with your order."}'::jsonb,
-  'Bring your collection code and collect promptly once the order is marked ready.',
+  'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold.',
   2
 ),
 (
@@ -699,7 +791,7 @@ insert into public.pops (
   'Address TBC', null, 'Heidelberg', 'Gauteng',
   null, null,
   '{"weekly":[{"day":0,"open":"00:00","close":"00:00","closed":true},{"day":1,"open":"09:00","close":"17:00"},{"day":2,"open":"09:00","close":"17:00"},{"day":3,"open":"09:00","close":"17:00"},{"day":4,"open":"09:00","close":"17:00"},{"day":5,"open":"09:00","close":"17:00"},{"day":6,"open":"09:00","close":"13:00"}],"note":"Collection hours are confirmed with your order."}'::jsonb,
-  'Bring your collection code and collect promptly once the order is marked ready.',
+  'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold.',
   3
 )
 on conflict do nothing;

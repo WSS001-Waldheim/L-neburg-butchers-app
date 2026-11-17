@@ -2,18 +2,27 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { StoreColumn } from '../../src/components/StoreColumn';
 import { WoodBackground } from '../../src/components/WoodBackground';
-import { useOrders } from '../../src/context/OrdersContext';
+import { useGuestOrder } from '../../src/data/useGuestOrder';
+import { readGuestToken } from '../../src/payments/yocoCheckout';
 import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
+function one(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw?.trim() ?? '';
+}
+
 export default function CheckoutCancelScreen() {
-  const { orderId } = useLocalSearchParams<{ orderId?: string }>();
-  const { getOrder } = useOrders();
-  const order = orderId ? getOrder(String(orderId)) : undefined;
+  const params = useLocalSearchParams<{ orderId?: string; token?: string }>();
+  const orderId = one(params.orderId);
+  const token = one(params.token) || (orderId ? readGuestToken(orderId) ?? '' : '');
+  const { order } = useGuestOrder(token);
 
   return (
     <WoodBackground>
+      <StoreColumn>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Payment cancelled</Text>
         <Text style={styles.body}>
@@ -35,6 +44,7 @@ export default function CheckoutCancelScreen() {
           />
         </Link>
       </ScrollView>
+      </StoreColumn>
     </WoodBackground>
   );
 }

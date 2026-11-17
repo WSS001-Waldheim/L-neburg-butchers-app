@@ -19,7 +19,7 @@ const CUSTOMER_TEMPLATES: Record<
 > = {
   'order.confirmed': (ctx) => ({
     title: 'Order confirmed',
-    body: `We've got order ${ctx.orderRef}. We'll pack it and send it to ${ctx.popName}.`,
+    body: `We've got order ${ctx.orderRef}. We'll pack it in a box for ${ctx.popName}.`,
   }),
   'order.left_butchery': (ctx) => ({
     title: 'Parcel left the butchery',
@@ -32,7 +32,7 @@ const CUSTOMER_TEMPLATES: Record<
     }
     return {
       title: 'Ready for collection',
-      body: `Collect at ${ctx.popName}. Code: ${code}.`,
+      body: `Your order is packed in a box and waiting at ${ctx.popName}. Code: ${code}. Collect whenever suits you.`,
     };
   },
   'order.collected': (ctx) => ({
@@ -122,15 +122,15 @@ export function timelineLabelForStatus(
       return popName ? `On the way to ${popName}` : 'On the way to pickup';
     case 'ready_for_collection':
       return popName
-        ? `Ready for collection at ${popName}`
-        : 'Ready for collection';
+        ? `Packed and waiting at ${popName}`
+        : 'Packed and waiting';
     case 'collected':
     case 'completed':
       return 'Collected';
     case 'cancelled':
       return 'Cancelled';
     case 'no_show':
-      return 'Missed collection — contact butchery';
+      return 'Still at the pickup point — collect whenever suits you';
     case 'returned_to_butchery':
       return 'Returned to butchery';
     default:

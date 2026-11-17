@@ -58,7 +58,7 @@ export default function AdminApplicationsScreen() {
         note: 'Collection hours are confirmed with your order.',
       },
       collectionInstructions:
-        'Bring your collection code. Collect promptly once the order is marked ready.',
+        'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold.',
       status: 'approved',
       isActive: false,
       sortOrder: 50 + applications.length,

@@ -4,6 +4,8 @@
 
 project_id = "hnhmfnundobuarvfbaae"
 
+# Guests send the anon key as the bearer. A signed-in access token is optional
+# and, when it is a real user, the order is attached to that account.
 [functions.create-checkout]
 verify_jwt = true
 

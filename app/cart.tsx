@@ -13,7 +13,7 @@ import { StoreColumn } from '../src/components/StoreColumn';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { useCart } from '../src/context/CartContext';
 import { useCatalog } from '../src/context/CatalogContext';
-import { OrderCutoffNotice } from '../src/components/OrderNotices';
+import { CollectionNotice } from '../src/components/OrderNotices';
 import { formatPrice } from '../src/data/types';
 import { colors } from '../src/theme/colors';
 import { type } from '../src/theme/typography';
@@ -90,7 +90,7 @@ export default function CartScreen() {
           );
         })}
 
-        <OrderCutoffNotice />
+        <CollectionNotice />
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Total</Text>
           <Text style={styles.totalValue}>{formatPrice(totalCents)}</Text>

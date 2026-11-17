@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -12,20 +12,19 @@ import {
 import { isDemoMode } from '../../src/config/demo';
 import { useAuth } from '../../src/auth/AuthContext';
 import { AccountForm } from '../../src/components/AccountForm';
-import { ColdChainNotice, OrderCutoffNotice } from '../../src/components/OrderNotices';
+import { ColdChainNotice, CollectionNotice } from '../../src/components/OrderNotices';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { StoreColumn } from '../../src/components/StoreColumn';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { useCart } from '../../src/context/CartContext';
-import { useOrders } from '../../src/context/OrdersContext';
 import { usePopLocations } from '../../src/context/PopLocationsContext';
 import { isSupabaseConfigured } from '../../src/data/supabaseClient';
-import { LOCAL_DELIVERY_TOWNS } from '../../src/data/seed';
-import type { FulfilmentMethod } from '../../src/data/types';
 import { formatPrice } from '../../src/data/types';
 import {
+  createYocoCheckout,
   isYocoHostedCheckoutEnabled,
-  redirectToYoco,
+  openHostedCheckout,
+  rememberGuestToken,
   yocoIsTestMode,
 } from '../../src/payments/yocoCheckout';
 import {
@@ -38,37 +37,48 @@ import { colors } from '../../src/theme/colors';
 import { type } from '../../src/theme/typography';
 
 /**
- * Checkout: contact → pickup → pack-check → Yoco hosted checkout.
- * Cards and Apple Pay (Safari on iPhone) both happen on Yoco’s page.
+ * Checkout: name, mobile, email, pickup point, then Yoco.
+ * An account is optional. Card and Apple Pay happen on Yoco’s page.
  */
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function newRequestId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `req-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export default function CheckoutScreen() {
-  const { items, totalCents, clear } = useCart();
-  const { placeOrder } = useOrders();
+  const { items, totalCents } = useCart();
   const { activePops, findPop, pops: allPops } = usePopLocations();
-  const { user, loginAs, liveSession } = useAuth();
+  const { user, loginAs } = useAuth();
   const router = useRouter();
 
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
-  const [notes, setNotes] = useState('');
-  const [fulfilment, setFulfilment] =
-    useState<FulfilmentMethod>('pop_collect');
-  const [popId, setPopId] = useState<string>(
-    'ultimate-outdoor-piet-retief'
-  );
+  const [popId, setPopId] = useState<string>('ultimate-outdoor-piet-retief');
   const [gpsNote, setGpsNote] = useState(
-    'Select a pickup point, or allow location to suggest the nearest one.'
+    'Ultimate Outdoor, Piet Retief, is selected. Choose another pickup point if you prefer.',
   );
   const [packCheck, setPackCheck] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const requestIds = useRef(new Map<string, string>());
   const yocoHosted = isYocoHostedCheckoutEnabled();
   const yocoTest = yocoIsTestMode();
 
   const pops = activePops;
+
+  useEffect(() => {
+    if (!user) return;
+    setName((current) => current || user.name);
+    setPhone((current) => current || user.phone);
+    setEmail((current) => current || user.email || '');
+  }, [user]);
 
   useEffect(() => {
     if (!pops.some((p) => p.id === popId)) {
@@ -103,19 +113,19 @@ export default function CheckoutScreen() {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           },
-          allPops
+          allPops,
         );
         if (nearest) {
           setPopId(nearest.pop.id);
           setGpsNote(
-            `Nearest pickup: ${nearest.pop.name} (${nearest.pop.areaLabel}). You can choose another.`
+            `Nearest pickup: ${nearest.pop.name} (${nearest.pop.areaLabel}). You can choose another.`,
           );
         }
       } catch {
         setGpsNote(
           Platform.OS === 'web'
             ? 'Ultimate Outdoor is selected. Choose another pickup point if you prefer.'
-            : 'Could not read location — choose a pickup point.'
+            : 'Could not read location — choose a pickup point.',
         );
       }
     })();
@@ -124,14 +134,15 @@ export default function CheckoutScreen() {
     };
   }, [allPops]);
 
+  const emailOk = EMAIL_PATTERN.test(email.trim());
   const canSubmit = useMemo(() => {
     if (items.length === 0) return false;
     if (name.trim().length < 2 || phone.trim().length < 6) return false;
+    if (!emailOk) return false;
     if (!packCheck) return false;
-    if (fulfilment === 'pop_collect' && !popId) return false;
-    if (!user) return false;
+    if (!popId) return false;
     return true;
-  }, [items.length, name, phone, packCheck, fulfilment, popId, user]);
+  }, [items.length, name, phone, emailOk, packCheck, popId]);
 
   if (items.length === 0) {
     return (
@@ -142,60 +153,39 @@ export default function CheckoutScreen() {
     );
   }
 
-  if (!user) {
-    return (
-      <WoodBackground>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.emptyText}>Sign in to place an order.</Text>
-          {isSupabaseConfigured() ? <AccountForm /> : null}
-          {isDemoMode() ? (
-            <PrimaryButton
-              label="Continue as demo customer"
-              onPress={() => loginAs('customer')}
-              variant="ghost"
-              style={{ marginTop: 12 }}
-            />
-          ) : null}
-        </ScrollView>
-      </WoodBackground>
-    );
-  }
-
   const onPlace = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
-      const customer = {
-        customerName: name.trim(),
-        phone: phone.trim(),
-        email: email.trim() || undefined,
-        notes: notes.trim() || undefined,
-        fulfilment,
-        popId: fulfilment === 'pop_collect' ? popId : undefined,
-        packCheckAcceptedAt: new Date().toISOString(),
-        actor: user,
-      };
-
-      if (!yocoHosted) {
+      if (!yocoHosted || !isSupabaseConfigured()) {
         setError(
-          'Yoco test checkout is not configured yet. Set EXPO_PUBLIC_YOCO_PUBLIC_KEY and the Supabase anon key. The secret stays on Supabase.',
+          'Payment is not available right now. Please try again in a little while.',
         );
         setSubmitting(false);
         return;
       }
-      if (isSupabaseConfigured() && !liveSession) {
-        setError('Sign in with your shop account before paying with Yoco.');
-        setSubmitting(false);
-        return;
+      const cartKey = `${popId}|${email.trim().toLowerCase()}|${items
+        .map((item) => `${item.productId}:${item.quantity}`)
+        .join(',')}`;
+      let clientRequestId = requestIds.current.get(cartKey);
+      if (!clientRequestId) {
+        clientRequestId = newRequestId();
+        requestIds.current.set(cartKey, clientRequestId);
       }
-      const orderId =
-        pendingOrderId ??
-        (
-          await placeOrder({ ...customer, deferPayment: true }, items)
-        ).id;
-      setPendingOrderId(orderId);
-      await redirectToYoco(orderId);
+      const result = await createYocoCheckout({
+        customerName: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        popId,
+        lines: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+        clientRequestId,
+      });
+      if (result.guestToken) rememberGuestToken(result.orderId, result.guestToken);
+      await openHostedCheckout(result.redirectUrl);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Checkout failed');
       setSubmitting(false);
@@ -218,110 +208,105 @@ export default function CheckoutScreen() {
       <StoreColumn sticky={payBar}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Your details</Text>
+        <Text style={styles.hint}>
+          No account needed. We use your email for the receipt.
+          {user
+            ? ` Signed in as ${user.name}. This order is also saved to your account.`
+            : ' Returning customers can sign in.'}
+        </Text>
+        {!user && isSupabaseConfigured() ? (
+          <Pressable
+            onPress={() => setShowSignIn((open) => !open)}
+            style={styles.signIn}
+            accessibilityRole="button"
+          >
+            <Text style={styles.signInText}>
+              {showSignIn ? 'Hide sign in' : 'Have an account? Sign in'}
+            </Text>
+          </Pressable>
+        ) : null}
+        {showSignIn && !user ? <AccountForm /> : null}
+        {!user && isDemoMode() ? (
+          <PrimaryButton
+            label="Continue as demo customer"
+            onPress={() => loginAs('customer')}
+            variant="ghost"
+            style={{ marginTop: 8 }}
+          />
+        ) : null}
+
         <Text style={styles.label}>Name</Text>
         <TextInput
           value={name}
           onChangeText={setName}
           style={styles.input}
+          autoComplete="name"
           placeholderTextColor={colors.woodLight}
         />
-        <Text style={styles.label}>Phone / WhatsApp</Text>
+        <Text style={styles.label}>Mobile number</Text>
         <TextInput
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
           style={styles.input}
+          autoComplete="tel"
           placeholderTextColor={colors.woodLight}
         />
-        <Text style={styles.label}>Email (optional)</Text>
+        <Text style={styles.label}>Email</Text>
         <TextInput
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
           style={styles.input}
+          autoComplete="email"
           placeholderTextColor={colors.woodLight}
         />
 
-        <Text style={[styles.heading, { marginTop: 24 }]}>Fulfilment</Text>
-        <Pressable
-          onPress={() => setFulfilment('pop_collect')}
-          style={[
-            styles.option,
-            fulfilment === 'pop_collect' && styles.optionSelected,
-          ]}
-        >
-          <Text style={styles.optionTitle}>Collect at Point of Pickup</Text>
-          <Text style={styles.optionDetail}>
-            Choose an active pickup point below.
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setFulfilment('local_delivery')}
-          style={[
-            styles.option,
-            fulfilment === 'local_delivery' && styles.optionSelected,
-          ]}
-        >
-          <Text style={styles.optionTitle}>Free local delivery</Text>
-          <Text style={styles.optionDetail}>
-            {LOCAL_DELIVERY_TOWNS.join(', ')}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setFulfilment('whatsapp_pickup')}
-          style={[
-            styles.option,
-            fulfilment === 'whatsapp_pickup' && styles.optionSelected,
-          ]}
-        >
-          <Text style={styles.optionTitle}>WhatsApp + Piet Retief pickup</Text>
-          <Text style={styles.optionDetail}>
-            Order by WhatsApp and collect in Piet Retief.
-          </Text>
-        </Pressable>
-
-        {fulfilment === 'pop_collect' ? (
-          <View style={styles.popBlock}>
-            <Text style={styles.label}>Point of Pickup</Text>
-            <Text style={styles.hint}>{gpsNote}</Text>
-            {pops.map((p) => (
-              <Pressable
-                key={p.id}
-                onPress={() => setPopId(p.id)}
-                style={[styles.option, popId === p.id && styles.optionSelected]}
-              >
-                <Text style={styles.optionTitle}>
-                  {p.name} · {p.areaLabel}
-                </Text>
-                <Text style={styles.optionDetail}>
-                  {[
-                    customerVisibleLine(p.addressLine1),
-                    customerVisibleLine(p.addressLine2),
-                    p.city,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Text>
-                <Text style={styles.optionDetail}>
-                  {customerHoursLine(p.hours.note)}
-                </Text>
-                {customerVisibleLine(p.collectionInstructions) ? (
-                  <Text style={styles.optionDetail}>
-                    {customerVisibleLine(p.collectionInstructions)}
-                  </Text>
-                ) : null}
-              </Pressable>
-            ))}
-            {selectedPop ? (
-              <Text style={styles.hint}>
-                Collecting at {selectedPop.name}, {selectedPop.addressLine1}.
+        <Text style={[styles.heading, { marginTop: 24 }]}>Pickup point</Text>
+        <Text style={styles.hint}>
+          The price you see is the full price. Choose where you will collect.
+        </Text>
+        <Text style={styles.hint}>{gpsNote}</Text>
+        {pops.map((p) => (
+          <Pressable
+            key={p.id}
+            onPress={() => setPopId(p.id)}
+            style={[styles.option, popId === p.id && styles.optionSelected]}
+          >
+            <Text style={styles.optionTitle}>
+              {p.name} · {p.areaLabel}
+            </Text>
+            <Text style={styles.optionDetail}>
+              {[
+                customerVisibleLine(p.addressLine1),
+                customerVisibleLine(p.addressLine2),
+                p.city,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+            <Text style={styles.optionDetail}>
+              {customerHoursLine(p.hours.note)}
+            </Text>
+            {customerVisibleLine(p.collectionInstructions) ? (
+              <Text style={styles.optionDetail}>
+                {customerVisibleLine(p.collectionInstructions)}
               </Text>
             ) : null}
-          </View>
-        ) : null}
+          </Pressable>
+        ))}
+        {selectedPop ? (
+          <Text style={styles.hint}>
+            Collecting at {selectedPop.name}, {selectedPop.addressLine1}.
+          </Text>
+        ) : (
+          <Text style={styles.hint}>No pickup point is open yet.</Text>
+        )}
 
         <Text style={[styles.heading, { marginTop: 24 }]}>Before you pay</Text>
-        <OrderCutoffNotice compact />
+        <CollectionNotice compact />
         <ColdChainNotice />
         <Pressable
           onPress={() => setPackCheck((v) => !v)}
@@ -331,7 +316,7 @@ export default function CheckoutScreen() {
             {packCheck ? '✓ ' : ''}I’ve checked this order
           </Text>
           <Text style={styles.optionDetail}>
-            Once packed, we can’t take it back for ordering mistakes.
+            Once packed, we can’t take it back for an ordering mistake.
           </Text>
         </Pressable>
 
@@ -339,11 +324,11 @@ export default function CheckoutScreen() {
         <Text style={styles.hint}>
           {yocoHosted
             ? `Card, or Apple Pay in Safari on iPhone. ${yocoTest ? 'Test mode.' : 'Live mode.'} Yoco’s page takes the payment. This screen is not the receipt — the order is marked paid when Yoco confirms it.`
-            : 'Card, or Apple Pay in Safari on iPhone, on Yoco’s secure page. Test mode starts when the public test key and the Supabase anon key are set. YOCO_SECRET_KEY and YOCO_WEBHOOK_SECRET stay on Supabase, not in the app.'}
+            : 'Card, or Apple Pay in Safari on iPhone, on Yoco’s page. Payment starts when the shop’s test keys are set.'}
         </Text>
 
         <View style={styles.summary}>
-          <Text style={styles.summaryLabel}>Estimated total</Text>
+          <Text style={styles.summaryLabel}>Total</Text>
           <Text style={styles.summaryValue}>{formatPrice(totalCents)}</Text>
         </View>
 
@@ -382,6 +367,8 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   hint: { ...type.caption, color: colors.inkSoft, marginBottom: 10 },
+  signIn: { minHeight: 44, justifyContent: 'center', marginBottom: 8 },
+  signInText: { ...type.bodyStrong, color: colors.forest },
   option: {
     minHeight: 52,
     padding: 14,
@@ -396,7 +383,6 @@ const styles = StyleSheet.create({
   },
   optionTitle: { ...type.bodyStrong, color: colors.forestDeep },
   optionDetail: { ...type.caption, color: colors.inkSoft, marginTop: 4 },
-  popBlock: { marginTop: 8 },
   summary: {
     flexDirection: 'row',
     justifyContent: 'space-between',

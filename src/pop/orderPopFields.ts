@@ -38,14 +38,14 @@ export function customerFulfilmentLabel(
     case 'dispatched_to_pop':
       return `On the way to ${popName}`;
     case 'ready_for_collection':
-      return `Ready for collection at ${popName}`;
+      return `Packed and waiting at ${popName}`;
     case 'collected':
     case 'completed':
       return 'Collected';
     case 'cancelled':
       return 'Cancelled';
     case 'no_show':
-      return 'Missed collection — contact butchery';
+      return 'Still at the pickup point — collect whenever suits you';
     case 'returned_to_butchery':
       return 'Returned to butchery';
     default: {
