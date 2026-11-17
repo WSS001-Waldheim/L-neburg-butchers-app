@@ -8,6 +8,7 @@
  *   import Constants from 'expo-constants';
  */
 
+import { PUBLIC_ENV } from '../config/publicEnv';
 import type { DevicePushToken, NotificationsMode } from './types';
 
 export type RegisterPushResult =
@@ -15,10 +16,7 @@ export type RegisterPushResult =
   | { ok: false; reason: 'stub' | 'denied' | 'not_device' | 'missing_project_id' };
 
 function readMode(): NotificationsMode {
-  const raw =
-    (typeof process !== 'undefined' &&
-      process.env?.EXPO_PUBLIC_NOTIFICATIONS_MODE) ||
-    'stub';
+  const raw = PUBLIC_ENV.EXPO_PUBLIC_NOTIFICATIONS_MODE || 'stub';
   if (raw === 'sandbox' || raw === 'live') return raw;
   return 'stub';
 }

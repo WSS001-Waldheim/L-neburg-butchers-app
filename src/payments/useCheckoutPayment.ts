@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { PUBLIC_ENV } from '../config/publicEnv';
 import type { PaymentProvider } from './PaymentProvider';
 import {
   createPaymentProviders,
@@ -63,10 +64,7 @@ export function useCheckoutPayment(
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const base = readPaymentsEnv(
-        typeof process !== 'undefined' ? process.env : {},
-        detectPlatform(),
-      );
+      const base = readPaymentsEnv(PUBLIC_ENV, detectPlatform());
       const env: PaymentsEnv = { ...base, ...envOverrides };
       const registry = await createPaymentProviders(env);
       if (cancelled) return;

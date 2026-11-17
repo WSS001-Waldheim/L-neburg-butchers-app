@@ -8,6 +8,7 @@
  *   EXPO_PUBLIC_API_BASE_URL
  */
 
+import { PUBLIC_ENV } from '../config/publicEnv';
 import type { PaymentProvider, PaymentProviderRegistry } from './PaymentProvider';
 import { createApplePayPaymentProvider } from './ApplePayPaymentProvider';
 import { createStubPaymentProvider } from './StubPaymentProvider';
@@ -23,7 +24,7 @@ export type PaymentsEnv = {
 };
 
 export function readPaymentsEnv(
-  env: Record<string, string | undefined> = {},
+  env: Record<string, string | undefined> = PUBLIC_ENV,
   platform: PaymentAvailabilityContext['platform'] = 'ios',
 ): PaymentsEnv {
   const mode = (env.EXPO_PUBLIC_PAYMENTS_MODE ?? 'stub') as PaymentsEnv['paymentsMode'];

@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { captureAuthUrl } from '../auth/authRedirect';
+import { PUBLIC_ENV } from '../config/publicEnv';
 
 captureAuthUrl();
 
@@ -9,7 +10,7 @@ captureAuthUrl();
  * The anon key is public. The service role and Yoco secret never belong here.
  */
 export function isSupabaseConfigured(
-  env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = PUBLIC_ENV,
 ): boolean {
   return Boolean(
     env.EXPO_PUBLIC_SUPABASE_URL?.trim() &&
@@ -47,8 +48,8 @@ const webStorage = {
 let client: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient {
-  const url = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
-  const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  const url = PUBLIC_ENV.EXPO_PUBLIC_SUPABASE_URL?.trim();
+  const anonKey = PUBLIC_ENV.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim();
   if (!url || !anonKey) {
     throw new Error(
       'Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.',
@@ -69,7 +70,7 @@ export function getSupabase(): SupabaseClient {
 }
 
 export function supabaseFunctionsUrl(name: string): string {
-  const url = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim().replace(/\/$/, '');
+  const url = PUBLIC_ENV.EXPO_PUBLIC_SUPABASE_URL?.trim().replace(/\/$/, '');
   if (!url) throw new Error('EXPO_PUBLIC_SUPABASE_URL is not set');
   return `${url}/functions/v1/${name}`;
 }

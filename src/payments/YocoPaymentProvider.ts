@@ -9,6 +9,7 @@
  * - Webhooks update Order.paymentStatus (source of truth)
  */
 
+import { PUBLIC_ENV } from '../config/publicEnv';
 import type { PaymentProvider } from './PaymentProvider';
 import type {
   CreatePaymentIntent,
@@ -41,10 +42,7 @@ export function createYocoPaymentProvider(
 
     async isAvailable(_ctx: PaymentAvailabilityContext): Promise<boolean> {
       if (!publicKey) return false;
-      const supabaseUrl =
-        typeof process !== 'undefined'
-          ? process.env.EXPO_PUBLIC_SUPABASE_URL
-          : undefined;
+      const supabaseUrl = PUBLIC_ENV.EXPO_PUBLIC_SUPABASE_URL;
       // Hosted Checkout (cards + Apple Pay on Safari) is the web-store path.
       // Native can use the same redirect when a return origin is configured.
       return (
