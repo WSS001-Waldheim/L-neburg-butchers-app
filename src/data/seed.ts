@@ -13,7 +13,7 @@ export const BATCHES: CarcassBatch[] = [
     finishedAt: '2026-09-28',
     processedAt: '2026-10-02',
     story:
-      'Born on Ouderdam under the Drakensberg foothills. Raised on our own pastures by the Lüneburg family — the same land and the same standards since 1946. Finished slowly for yellow fat and marbling that hold up in vacuum skin pack.',
+      'Born on Ouderdom under the Drakensberg foothills. Raised on our own pastures by the Lüneburg family — the same land and the same standards since 1946. Finished slowly for yellow fat and marbling that hold up in vacuum skin pack.',
     butchersNote:
       'Carcass LC-2026-0142 was broken by father and brother Ruben. Ear tag ODB-214 linked in Cleaver. Packs from this carcass carry one shared QR for the batch story.',
   },
@@ -172,20 +172,6 @@ export const PRODUCTS: Product[] = [
     nextArrivalAt: '2026-11-10T08:00:00+02:00',
     carcassBatchId: null,
   },
-  {
-    id: 'sausage-buddhawurst',
-    name: 'Buddhawurst',
-    section: 'sausages',
-    description: 'Salt & pepper style Buddhawurst — clean seasoning, no compromise.',
-    priceCents: 17500,
-    unitLabel: '500g',
-    weightGrams: 500,
-    imageHint: 'buddhawurst',
-    stockLevel: 8,
-    lowStockThreshold: 4,
-    nextArrivalAt: '2026-11-10T08:00:00+02:00',
-    carcassBatchId: null,
-  },
 ];
 
 export function assertStockRules(products: Product[] = PRODUCTS): void {
@@ -212,15 +198,9 @@ export const SECTION_META: Record<
   },
   sausages: {
     title: 'German-style Sausages',
-    blurb: 'Medwurst, Bratwurst, and Buddhawurst from the butchery.',
+    blurb: 'Medwurst and Bratwurst from the butchery.',
   },
 };
-
-export const LOCAL_DELIVERY_TOWNS = [
-  'Piet Retief',
-  'Vryheid',
-  'Paulpietersburg',
-] as const;
 
 export const DEMO_ORDERS: Order[] = [
   {

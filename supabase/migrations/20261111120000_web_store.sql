@@ -615,13 +615,13 @@ insert into public.carcass_batches (
 ) values
 (
   'batch-ox-214', 'ODB-214', 'LC-2026-0142', 'LC-2026-0142', 'Drakensberg',
-  '2023-04-12', 'Ouderdam Farm, Lüneburg', '2026-09-28', '2026-10-02',
-  'Born on Ouderdam under the Drakensberg foothills. Raised on our own pastures by the Lüneburg family — the same land and the same standards since 1946. Finished slowly for yellow fat and marbling that hold up in vacuum skin pack.',
+  '2023-04-12', 'Ouderdom Farm, Lüneburg', '2026-09-28', '2026-10-02',
+  'Born on Ouderdom under the Drakensberg foothills. Raised on our own pastures by the Lüneburg family — the same land and the same standards since 1946. Finished slowly for yellow fat and marbling that hold up in vacuum skin pack.',
   'Carcass LC-2026-0142 was broken by father and brother Ruben. Ear tag ODB-214 linked in Cleaver. Packs from this carcass carry one shared QR for the batch story.'
 ),
 (
   'batch-ox-198', 'ODB-198', 'LC-2026-0118', 'LC-2026-0118', 'Drakensberg',
-  '2023-02-03', 'Ouderdam Farm, Lüneburg', '2026-08-15', '2026-08-19',
+  '2023-02-03', 'Ouderdom Farm, Lüneburg', '2026-08-15', '2026-08-19',
   'A quiet animal with strong frame — typical of our Drakensberg line. Grazed the same camps as his sire. We wait for the fat colour and size we want before we cut.',
   'Used primarily for braai-box and sausage trim after premium steaks were pulled. Traceability still runs ear tag to carcass to pack QR.'
 )
@@ -657,10 +657,7 @@ insert into public.products (
   16500, '500g', 500, null, 'medwurst', 14, 4, '2026-11-10T08:00:00+02:00', null),
 ('sausage-bratwurst', 'Bratwurst', 'sausages',
   'German-style Bratwurst for the pan or the fire.',
-  15500, '500g', 500, null, 'bratwurst', 1, 4, '2026-11-10T08:00:00+02:00', null),
-('sausage-buddhawurst', 'Buddhawurst', 'sausages',
-  'Salt and pepper style Buddhawurst — clean seasoning, no compromise.',
-  17500, '500g', 500, null, 'buddhawurst', 8, 4, '2026-11-10T08:00:00+02:00', null)
+  15500, '500g', 500, null, 'bratwurst', 1, 4, '2026-11-10T08:00:00+02:00', null)
 on conflict do nothing;
 
 insert into public.pops (
@@ -672,7 +669,7 @@ insert into public.pops (
   '18 Smit Street', 'ex-Foggerful Megaworld', 'Piet Retief', 'Mpumalanga',
   -27.0035, 30.8132,
   '{"weekly":[{"day":0,"open":"00:00","close":"00:00","closed":true},{"day":1,"open":"09:00","close":"17:00"},{"day":2,"open":"09:00","close":"17:00"},{"day":3,"open":"09:00","close":"17:00"},{"day":4,"open":"09:00","close":"17:00"},{"day":5,"open":"09:00","close":"17:00"},{"day":6,"open":"09:00","close":"13:00"}],"note":"Collection hours are confirmed with your order."}'::jsonb,
-  'Bring your collection code and ID. Keep packs cold — collect promptly once marked ready. Site formerly Foggerful Megaworld.',
+  'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold. Site formerly Foggerful Megaworld.',
   1
 ),
 (
@@ -680,7 +677,7 @@ insert into public.pops (
   '291 Main Street', null, 'Pretoria', 'Gauteng',
   -25.7786, 28.2406,
   '{"weekly":[{"day":0,"open":"00:00","close":"00:00","closed":true},{"day":1,"open":"09:00","close":"17:00"},{"day":2,"open":"09:00","close":"17:00"},{"day":3,"open":"09:00","close":"17:00"},{"day":4,"open":"09:00","close":"17:00"},{"day":5,"open":"09:00","close":"17:00"},{"day":6,"open":"09:00","close":"13:00"}],"note":"Collection hours are confirmed with your order."}'::jsonb,
-  'Bring your collection code and collect promptly once the order is marked ready.',
+  'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold.',
   2
 ),
 (
@@ -688,7 +685,7 @@ insert into public.pops (
   'Address TBC', null, 'Heidelberg', 'Gauteng',
   null, null,
   '{"weekly":[{"day":0,"open":"00:00","close":"00:00","closed":true},{"day":1,"open":"09:00","close":"17:00"},{"day":2,"open":"09:00","close":"17:00"},{"day":3,"open":"09:00","close":"17:00"},{"day":4,"open":"09:00","close":"17:00"},{"day":5,"open":"09:00","close":"17:00"},{"day":6,"open":"09:00","close":"13:00"}],"note":"Collection hours are confirmed with your order."}'::jsonb,
-  'Bring your collection code and collect promptly once the order is marked ready.',
+  'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold.',
   3
 )
 on conflict do nothing;

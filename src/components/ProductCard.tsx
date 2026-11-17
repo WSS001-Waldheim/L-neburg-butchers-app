@@ -22,7 +22,6 @@ const CUT_TONES: Record<string, string> = {
   boerewors: '#5A3C28',
   medwurst: '#4E3A2C',
   bratwurst: '#554032',
-  buddhawurst: '#483628',
 };
 
 export function ProductCard({ product, index = 0 }: Props) {

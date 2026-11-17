@@ -4,7 +4,7 @@
  * Addresses from Karl (2026-11-01). Collection hours are confirmed with each order.
  * Approx lat/lng for nearest-POP suggestions — refine when Maps pins are confirmed.
  * Heidelberg geo intentionally omitted until the partner is confirmed.
- * Butchery base (not a POP): Ouderdam Farm, Lüneburg, near Paulpietersburg.
+ * Butchery base (not a POP): Ouderdom Farm, Lüneburg, near Paulpietersburg.
  */
 
 import type { AuthUser, PopLocation, PopStaffMembership } from './types';
@@ -44,7 +44,7 @@ export const SEED_POPS: readonly PopLocation[] = [
     geo: { lat: -27.0035, lng: 30.8132 },
     hours: COLLECTION_HOURS,
     collectionInstructions:
-      'Bring your collection code and ID. Keep packs cold — collect promptly once marked ready. Site formerly Foggerful Megaworld.',
+      'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold. Site formerly Foggerful Megaworld.',
     status: 'active',
     isActive: true,
     sortOrder: 1,
@@ -62,7 +62,7 @@ export const SEED_POPS: readonly PopLocation[] = [
     geo: { lat: -25.7786, lng: 28.2406 },
     hours: COLLECTION_HOURS,
     collectionInstructions:
-      'Bring your collection code and collect promptly once the order is marked ready.',
+      'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold.',
     status: 'pending',
     isActive: false,
     sortOrder: 2,
@@ -79,7 +79,7 @@ export const SEED_POPS: readonly PopLocation[] = [
     // geo set when the Heidelberg partner and street address are locked
     hours: COLLECTION_HOURS,
     collectionInstructions:
-      'Bring your collection code and collect promptly once the order is marked ready.',
+      'Bring your collection code and ID. Your order is packed in a box and waiting for you — collect whenever suits you. Keep the packs cold.',
     status: 'pending',
     isActive: false,
     sortOrder: 3,
