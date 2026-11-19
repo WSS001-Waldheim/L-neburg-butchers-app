@@ -20,6 +20,7 @@ import { establishSessionFromUrl } from '../src/auth/authRedirect';
 import { AuthProvider } from '../src/auth/AuthContext';
 import { getSupabase, isSupabaseConfigured } from '../src/data/supabaseClient';
 import { OpeningSplash } from '../src/components/OpeningSplash';
+import { HeaderBack } from '../src/components/HeaderBack';
 import { CartProvider } from '../src/context/CartContext';
 import { CatalogProvider } from '../src/context/CatalogContext';
 import { OrdersProvider } from '../src/context/OrdersContext';
@@ -102,6 +103,9 @@ export default function RootLayout() {
                   screenOptions={{
                     headerStyle: { backgroundColor: colors.forestDeep },
                     headerTintColor: colors.gold,
+                    headerTitleAlign: 'center',
+                    headerBackVisible: false,
+                    headerLeft: () => <HeaderBack />,
                     headerTitleStyle: {
                       fontFamily: 'CormorantGaramond_600SemiBold',
                       fontSize: 20,
