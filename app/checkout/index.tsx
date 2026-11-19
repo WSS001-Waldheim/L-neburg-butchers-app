@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -12,6 +11,7 @@ import {
 import { isDemoMode } from '../../src/config/demo';
 import { useAuth } from '../../src/auth/AuthContext';
 import { AccountForm } from '../../src/components/AccountForm';
+import { KeyboardAwareScroll } from '../../src/components/KeyboardAwareScroll';
 import { ColdChainNotice, CollectionNotice } from '../../src/components/OrderNotices';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { StoreColumn } from '../../src/components/StoreColumn';
@@ -206,7 +206,7 @@ export default function CheckoutScreen() {
   return (
     <WoodBackground>
       <StoreColumn sticky={payBar}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScroll contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Your details</Text>
         <Text style={styles.hint}>
           No account needed. We use your email for the receipt.
@@ -333,7 +333,7 @@ export default function CheckoutScreen() {
         </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
-      </ScrollView>
+      </KeyboardAwareScroll>
       </StoreColumn>
     </WoodBackground>
   );

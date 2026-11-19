@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardAwareScroll } from '../../src/components/KeyboardAwareScroll';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { assertTransitionApplication } from '../../src/pop/applicationStatusMachine';
@@ -89,7 +89,7 @@ export default function PartnerApplyScreen() {
 
   return (
     <WoodBackground>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScroll contentContainerStyle={styles.content}>
         <Text style={styles.kicker}>{copy.sectionTitle}</Text>
         <Text style={styles.heading}>{copy.headline}</Text>
         <Text style={styles.body}>{copy.intro}</Text>
@@ -146,7 +146,7 @@ export default function PartnerApplyScreen() {
             />
           </>
         )}
-      </ScrollView>
+      </KeyboardAwareScroll>
     </WoodBackground>
   );
 }

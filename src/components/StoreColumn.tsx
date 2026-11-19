@@ -37,11 +37,13 @@ const styles = StyleSheet.create({
   },
   column: {
     flex: 1,
+    minHeight: 0,
     width: '100%',
     maxWidth: 440,
   },
   body: {
     flex: 1,
+    minHeight: 0,
   },
   sticky: {
     paddingHorizontal: 16,

@@ -1,8 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { DEMO_USERS, isDemoAccount, useAuth } from '../src/auth/AuthContext';
 import { AccountForm } from '../src/components/AccountForm';
+import { KeyboardAwareScroll } from '../src/components/KeyboardAwareScroll';
 import { PrimaryButton } from '../src/components/PrimaryButton';
+import { StoreColumn } from '../src/components/StoreColumn';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { isDemoMode } from '../src/config/demo';
 import { isSupabaseConfigured } from '../src/data/supabaseClient';
@@ -16,7 +18,8 @@ export default function ProfileScreen() {
 
   return (
     <WoodBackground>
-      <View style={styles.content}>
+      <StoreColumn>
+      <KeyboardAwareScroll contentContainerStyle={styles.content}>
         {user ? (
           <>
             <Text style={styles.name}>
@@ -77,7 +80,8 @@ export default function ProfileScreen() {
             ))}
           </>
         ) : null}
-      </View>
+      </KeyboardAwareScroll>
+      </StoreColumn>
     </WoodBackground>
   );
 }

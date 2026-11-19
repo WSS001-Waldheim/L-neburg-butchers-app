@@ -2,13 +2,13 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useAuth } from '../../src/auth/AuthContext';
+import { KeyboardAwareScroll } from '../../src/components/KeyboardAwareScroll';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { isDemoMode } from '../../src/config/demo';
@@ -47,7 +47,7 @@ export default function PartnerDashboardScreen() {
 
   return (
     <WoodBackground>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScroll contentContainerStyle={styles.content}>
         <Text style={styles.heading}>{pop?.name ?? 'POP'} · assigned orders</Text>
         <Text style={styles.hint}>
           Orders assigned to this pickup point. When the customer arrives, enter
@@ -131,7 +131,7 @@ export default function PartnerDashboardScreen() {
           ))
         )}
         {error ? <Text style={styles.error}>{error}</Text> : null}
-      </ScrollView>
+      </KeyboardAwareScroll>
     </WoodBackground>
   );
 }

@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import { StyleSheet, Text, TextInput } from 'react-native';
 import { useAuth } from '../../src/auth/AuthContext';
+import { KeyboardAwareScroll } from '../../src/components/KeyboardAwareScroll';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { StoreColumn } from '../../src/components/StoreColumn';
 import { WoodBackground } from '../../src/components/WoodBackground';
@@ -62,7 +63,7 @@ export default function ResetPasswordScreen() {
   return (
     <WoodBackground>
       <StoreColumn>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScroll contentContainerStyle={styles.content}>
           <Text style={styles.heading}>New password</Text>
           <Text style={styles.body}>
             Choose the password you will use to sign in at Admin. It is stored by Supabase, not in the shop code.
@@ -115,7 +116,7 @@ export default function ResetPasswordScreen() {
             onPress={() => router.replace('/admin')}
             style={{ marginTop: 8 }}
           />
-        </ScrollView>
+        </KeyboardAwareScroll>
       </StoreColumn>
     </WoodBackground>
   );

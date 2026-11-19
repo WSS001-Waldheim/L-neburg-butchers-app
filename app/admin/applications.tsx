@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useAuth } from '../../src/auth/AuthContext';
+import { KeyboardAwareScroll } from '../../src/components/KeyboardAwareScroll';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { WoodBackground } from '../../src/components/WoodBackground';
 import { usePartnerApplications } from '../../src/context/PartnerApplicationsContext';
@@ -85,7 +85,7 @@ export default function AdminApplicationsScreen() {
 
   return (
     <WoodBackground>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScroll contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Partner applications</Text>
         <Text style={styles.hint}>
           Manual approval only. Approving a partner does not put them on the
@@ -130,7 +130,7 @@ export default function AdminApplicationsScreen() {
             </View>
           ))
         )}
-      </ScrollView>
+      </KeyboardAwareScroll>
     </WoodBackground>
   );
 }

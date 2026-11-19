@@ -3,13 +3,13 @@ import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useAuth } from '../../../src/auth/AuthContext';
+import { KeyboardAwareScroll } from '../../../src/components/KeyboardAwareScroll';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { WoodBackground } from '../../../src/components/WoodBackground';
 import { AdminSignIn, canAccessAdmin } from '../../../src/components/AdminSignIn';
@@ -171,7 +171,7 @@ export default function AdminProductEditScreen() {
   return (
     <WoodBackground>
       <Stack.Screen options={{ title: isNew ? 'New product' : 'Edit product' }} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScroll contentContainerStyle={styles.content}>
         <Field label="Name" value={name} onChangeText={setName} />
         <Text style={styles.label}>Section</Text>
         <View style={styles.chips}>
@@ -283,7 +283,7 @@ export default function AdminProductEditScreen() {
             <Text style={styles.deleteText}>Delete product</Text>
           </Pressable>
         ) : null}
-      </ScrollView>
+      </KeyboardAwareScroll>
     </WoodBackground>
   );
 }

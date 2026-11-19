@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mist,
     borderWidth: 1,
     borderColor: colors.woodWash,
+    minHeight: 48,
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: colors.ink,

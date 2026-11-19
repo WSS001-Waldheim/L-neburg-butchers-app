@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import { StyleSheet, Text, TextInput } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
 import { isDemoMode } from '../config/demo';
 import { isSupabaseConfigured } from '../data/supabaseClient';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
+import { KeyboardAwareScroll } from './KeyboardAwareScroll';
 import { PrimaryButton } from './PrimaryButton';
 import { StoreColumn } from './StoreColumn';
 import { WoodBackground } from './WoodBackground';
@@ -67,7 +68,7 @@ export function AdminSignIn() {
   return (
     <WoodBackground>
       <StoreColumn>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScroll contentContainerStyle={styles.content}>
           <Text style={styles.kicker}>Lüneburg</Text>
           <Text style={styles.heading}>Admin</Text>
           <Text style={styles.body}>
@@ -131,7 +132,7 @@ export function AdminSignIn() {
               style={{ marginTop: 20 }}
             />
           ) : null}
-        </ScrollView>
+        </KeyboardAwareScroll>
       </StoreColumn>
     </WoodBackground>
   );

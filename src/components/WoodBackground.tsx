@@ -23,6 +23,7 @@ export function WoodBackground({ children, style, variant = 'page' }: Props) {
 const styles = StyleSheet.create({
   base: {
     flex: 1,
+    minHeight: 0,
     overflow: 'hidden',
     backgroundColor: colors.parchment,
   },
