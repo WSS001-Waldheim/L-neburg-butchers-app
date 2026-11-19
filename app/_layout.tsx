@@ -26,7 +26,6 @@ import { OrdersProvider } from '../src/context/OrdersContext';
 import { PartnerApplicationsProvider } from '../src/context/PartnerApplicationsContext';
 import { PopLocationsProvider } from '../src/context/PopLocationsContext';
 import { colors } from '../src/theme/colors';
-import { installKeyboardViewport } from '../src/web/keyboardViewport';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -79,7 +78,6 @@ export default function RootLayout() {
     root.style.overflowX = 'hidden';
     document.body.style.overflowX = 'hidden';
     document.body.style.margin = '0';
-    return installKeyboardViewport();
   }, []);
 
   if (!loaded) {
