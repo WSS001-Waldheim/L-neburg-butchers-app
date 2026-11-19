@@ -1,5 +1,8 @@
-/** Production shop. Also allow this origin under Supabase Auth redirect URLs. */
-export const PRODUCTION_SITE_URL = 'https://luneburg-shop.vercel.app';
+/**
+ * Canonical shop. luneburg-shop.vercel.app still opens the same deployment.
+ * Supabase Auth must allow both origins. See docs/WEB_STORE.md.
+ */
+export const PRODUCTION_SITE_URL = 'https://butchery.wssfarming.co.za';
 
 export function siteOrigin(): string {
   if (typeof window !== 'undefined' && window.location?.origin) {

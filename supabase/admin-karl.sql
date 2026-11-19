@@ -1,7 +1,7 @@
 -- Grant Karl admin on project hnhmfnundobuarvfbaae.
 -- Paste into the Supabase SQL editor and run once.
 -- This does not create a user and does not set a password.
--- Karl chooses his password on https://luneburg-shop.vercel.app/admin.
+-- Karl chooses his password on https://butchery.wssfarming.co.za/admin.
 
 create or replace function public.handle_new_user()
 returns trigger

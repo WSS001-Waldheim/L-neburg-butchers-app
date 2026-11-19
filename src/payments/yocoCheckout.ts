@@ -1,4 +1,5 @@
 import { Linking } from 'react-native';
+import { PRODUCTION_SITE_URL } from '../auth/adminUrls';
 import { PUBLIC_ENV } from '../config/publicEnv';
 import { getSupabase, supabaseFunctionsUrl } from '../data/supabaseClient';
 
@@ -63,9 +64,7 @@ export function webStoreOrigin(): string {
   }
   const configured = PUBLIC_ENV.EXPO_PUBLIC_WEB_STORE_URL?.trim();
   if (configured) return configured.replace(/\/$/, '');
-  throw new Error(
-    'Set EXPO_PUBLIC_WEB_STORE_URL so Yoco can return to the shop from the app.',
-  );
+  return PRODUCTION_SITE_URL;
 }
 
 export function rememberGuestToken(orderId: string, token: string): void {

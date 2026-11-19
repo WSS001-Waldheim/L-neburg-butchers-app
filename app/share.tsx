@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Share, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { KeyboardAwareScroll } from '../src/components/KeyboardAwareScroll';
 import { PrimaryButton } from '../src/components/PrimaryButton';
+import { StoreColumn } from '../src/components/StoreColumn';
 import { WoodBackground } from '../src/components/WoodBackground';
 import { APP_DOWNLOAD_URL } from '../src/config/appDownload';
 import { colors } from '../src/theme/colors';
@@ -25,10 +27,11 @@ export default function ShareAppScreen() {
 
   return (
     <WoodBackground>
-      <View style={styles.content}>
+      <StoreColumn>
+      <KeyboardAwareScroll contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Share the app</Text>
         <Text style={styles.body}>
-          Scan this code to download Lüneburg Country Butchery.
+          Scan this code to open the Lüneburg Country Butchery shop.
         </Text>
         <View style={styles.qrWrap}>
           <QRCode
@@ -47,7 +50,8 @@ export default function ShareAppScreen() {
           onPress={onShare}
           style={{ marginTop: 20 }}
         />
-      </View>
+      </KeyboardAwareScroll>
+      </StoreColumn>
     </WoodBackground>
   );
 }

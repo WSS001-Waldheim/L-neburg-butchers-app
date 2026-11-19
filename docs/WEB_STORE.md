@@ -147,10 +147,11 @@ Vercel environment variables (all public, baked in at build time):
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` = the anon key from Supabase → Project Settings → API
 - `EXPO_PUBLIC_YOCO_PUBLIC_KEY` = `YOCO_PUBLIC_KEY` (`pk_test_…` to start)
 - `EXPO_PUBLIC_PAYMENTS_MODE` = `sandbox`
+- `EXPO_PUBLIC_WEB_STORE_URL` = `https://butchery.wssfarming.co.za`
 
 `EXPO_PUBLIC_ORDER_CUTOFF` is unused. Orders have no cut-off.
 
-Do not add `YOCO_SECRET_KEY`, `YOCO_WEBHOOK_SECRET`, or the service role key to Vercel. Those stay on Supabase. Attach the domain, then set the Edge Function secret `ALLOWED_RETURN_ORIGINS` to that origin.
+Do not add `YOCO_SECRET_KEY`, `YOCO_WEBHOOK_SECRET`, or the service role key to Vercel. Those stay on Supabase. If the Edge Function secret `ALLOWED_RETURN_ORIGINS` is set, include both `https://butchery.wssfarming.co.za` and `https://luneburg-shop.vercel.app`.
 
 ### Netlify
 
@@ -158,20 +159,20 @@ Build command `npx expo export --platform web`. Publish directory `dist`. Same p
 
 ## Admin login
 
-The portal is [https://luneburg-shop.vercel.app/admin](https://luneburg-shop.vercel.app/admin). Only a Supabase user whose `profiles.role` is `admin` sees orders, prices, stock, and the status buttons.
+The portal is [https://butchery.wssfarming.co.za/admin](https://butchery.wssfarming.co.za/admin). [https://luneburg-shop.vercel.app/admin](https://luneburg-shop.vercel.app/admin) opens the same deployment. Only a Supabase user whose `profiles.role` is `admin` sees orders, prices, stock, and the status buttons.
 
 Run `supabase/admin-karl.sql` in the SQL editor. It does not create a password. It marks `karl@wssfarming.co.za` as admin on signup, and upgrades the profile if that email has already signed in.
 
 In the Supabase dashboard, Authentication → URL configuration:
 
-- Site URL: `https://luneburg-shop.vercel.app`
-- Redirect URLs: `https://luneburg-shop.vercel.app/**`
+- Site URL: `https://butchery.wssfarming.co.za`
+- Redirect URLs: `https://butchery.wssfarming.co.za/**` and `https://luneburg-shop.vercel.app/**`
 
-Authentication → Providers → Email stays on. The invite and reset links must be allowed to return to the site above. Supabase’s built-in mail is rate-limited.
+Keep the vercel.app redirect. Invite and reset links use whichever host the person is on, and both must be allowed. Authentication → Providers → Email stays on. Supabase’s built-in mail is rate-limited.
 
 Karl is invited from the dashboard (no password is created in the app):
 
-1. Open the invite email on the phone, or go to https://luneburg-shop.vercel.app/admin, enter `karl@wssfarming.co.za`, and tap **Email me a link to set/reset my password**.
+1. Open the invite email on the phone, or go to https://butchery.wssfarming.co.za/admin, enter `karl@wssfarming.co.za`, and tap **Email me a link to set/reset my password**.
 2. The link opens **New password** (even when Supabase first sends the browser to the shop home).
 3. Type a password, confirm it, tap **Save password**. Admin opens, signed in.
 4. Next visit: **Sign in** with that email and password.
